@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Green AI2 – ประเมินคาร์บอนงาน AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="badge">🌱 Green AI2 · ตัวอย่างแอป</p>
+    <h1>ประเมินรอยเท้าคาร์บอนของงาน AI</h1>
+    <p class="sub">ใส่ข้อมูลฮาร์ดแวร์ เวลา และที่ตั้งศูนย์ข้อมูล แล้วดูปริมาณไฟฟ้า ก๊าซเรือนกระจก และแนวทางลดผลกระทบ</p>
+  </div>
+</header>
+
+<main class="wrap grid">
+  <section class="card" aria-labelledby="h-input">
+    <h2 id="h-input">1. ข้อมูลงาน</h2>
+    <form id="form">
+      <label>ชื่องาน
+        <input id="name" type="text" value="ฝึกโมเดลจำแนกภาพดาวเทียม" maxlength="60">
+      </label>
+      <label>ชนิดงาน
+        <select id="mode">
+          <option value="train">ฝึกโมเดล (Training)</option>
+          <option value="infer">ให้บริการ (Inference)</option>
+        </select>
+      </label>
+      <label>ฮาร์ดแวร์
+        <select id="gpu"></select>
+      </label>
+      <label>จำนวนการ์ด
+        <input id="count" type="number" min="1" max="10000" value="8">
+      </label>
+      <label>อัตราใช้งานจริงของการ์ด (<output id="utilOut">70</output>%)
+        <input id="util" type="range" min="10" max="100" value="70">
+      </label>
+      <label id="hoursRow">ระยะเวลาฝึก (ชั่วโมง)
+        <input id="hours" type="number" min="0.1" step="0.1" value="72">
+      </label>
+      <div id="inferRows" hidden>
+        <label>คำขอต่อวัน
+          <input id="reqs" type="number" min="1" value="200000">
+        </label>
+        <label>วินาที GPU ต่อคำขอ
+          <input id="sec" type="number" min="0.001" step="0.001" value="0.25">
+        </label>
+        <label>ให้บริการกี่วัน
+          <input id="days" type="number" min="1" value="365">
+        </label>
+      </div>
+      <label>ที่ตั้งศูนย์ข้อมูล (ความเข้มคาร์บอนของไฟฟ้า)
+        <select id="region"></select>
+      </label>
+      <label>PUE ของศูนย์ข้อมูล (<output id="pueOut">1.4</output>)
+        <input id="pue" type="range" min="1.05" max="2.0" step="0.05" value="1.4">
+      </label>
+      <button type="submit" class="primary">คำนวณ</button>
+    </form>
+  </section>
+
+  <section class="card" aria-labelledby="h-res" aria-live="polite">
+    <h2 id="h-res">2. ผลลัพธ์</h2>
+    <div class="kpis">
+      <div class="kpi"><span>พลังงาน</span><b id="kWh">–</b><small>kWh</small></div>
+      <div class="kpi main"><span>ก๊าซเรือนกระจก</span><b id="kg">–</b><small>kgCO₂e</small></div>
+      <div class="kpi"><span>เกรด</span><b id="grade">–</b><small id="gradeNote">&nbsp;</small></div>
+    </div>
+    <ul class="equiv" id="equiv"></ul>
+    <h3>เทียบกับที่ตั้งอื่น (งานเดียวกัน)</h3>
+    <div id="chart" class="chart" role="img" aria-label="กราฟเปรียบเทียบคาร์บอนตามภูมิภาค"></div>
+    <div class="actions">
+      <button id="save" type="button">บันทึกลงประวัติ</button>
+      <button id="csv" type="button" class="ghost">ส่งออก CSV</button>
+    </div>
+  </section>
+
+  <section class="card wide" aria-labelledby="h-tips">
+    <h2 id="h-tips">3. คำแนะนำเพื่อลดคาร์บอน</h2>
+    <ul id="tips" class="tips"></ul>
+  </section>
+
+  <section class="card wide" aria-labelledby="h-hist">
+    <h2 id="h-hist">4. ประวัติที่บันทึก</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>งาน</th><th>ชนิด</th><th>ฮาร์ดแวร์</th><th>kWh</th><th>kgCO₂e</th><th></th></tr></thead>
+        <tbody id="hist"></tbody>
+      </table>
+    </div>
+    <p id="histEmpty" class="muted">ยังไม่มีรายการ</p>
+  </section>
+</main>
+
+<footer class="wrap muted">
+  ตัวเลขเป็นค่าประมาณเพื่อการสาธิตเท่านั้น (กำลังไฟใช้ค่า TDP และความเข้มคาร์บอนเป็นค่าเฉลี่ยโดยประมาณ) ไม่ควรใช้เป็นตัวเลขรายงานทางการ
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

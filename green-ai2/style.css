@@ -1,0 +1,43 @@
+:root{--bg:#f3f7f4;--card:#fff;--ink:#12261c;--muted:#5d7166;--line:#d9e4dc;--green:#1f8a4c;--green-d:#14683a;--warn:#c77d0a;--bad:#c0392b}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1a13;--card:#15251b;--ink:#e6f2ea;--muted:#9ab0a2;--line:#274134;--green:#3ec27a;--green-d:#2a9e5f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Sans Thai","Sarabun",system-ui,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+.hero{background:linear-gradient(135deg,#0f5132,#1f8a4c);color:#fff;padding:36px 0 44px}
+.hero h1{margin:.3em 0 .2em;font-size:clamp(1.6rem,4vw,2.4rem)}
+.sub{margin:0;opacity:.9;max-width:60ch}
+.badge{display:inline-block;margin:0;background:#ffffff26;padding:2px 12px;border-radius:99px;font-size:.9rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:-24px;padding-bottom:24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:0 2px 8px #0000000d}
+.wide{grid-column:1/-1}
+h2{margin:0 0 12px;font-size:1.15rem}h3{font-size:1rem;margin:18px 0 6px}
+label{display:block;margin-bottom:12px;font-size:.92rem;color:var(--muted)}
+input,select{display:block;width:100%;margin-top:4px;padding:8px 10px;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px}
+input[type=range]{padding:0;accent-color:var(--green)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--green);background:transparent;color:var(--green);padding:8px 16px}
+button.primary{background:var(--green);color:#fff;width:100%;font-weight:600}
+button.primary:hover{background:var(--green-d)}
+button.ghost{border-color:var(--line);color:var(--muted)}
+:focus-visible{outline:3px solid #f5b70099;outline-offset:2px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{background:var(--bg);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column}
+.kpi span,.kpi small{font-size:.8rem;color:var(--muted)}
+.kpi b{font-size:1.5rem;line-height:1.2;word-break:break-all}
+.kpi.main b{color:var(--green)}
+.equiv{list-style:none;padding:0;margin:12px 0;display:grid;gap:6px}
+.equiv li{background:var(--bg);border-radius:8px;padding:6px 12px;font-size:.95rem}
+.chart .row{display:grid;grid-template-columns:110px 1fr 70px;gap:8px;align-items:center;font-size:.85rem;margin:4px 0}
+.chart .bar{height:14px;background:var(--line);border-radius:7px;overflow:hidden}
+.chart .bar i{display:block;height:100%;background:var(--green);border-radius:7px;transition:width .4s}
+.chart .row.cur .bar i{background:var(--warn)}
+.chart .row.cur{font-weight:600}
+.chart .v{text-align:right;font-variant-numeric:tabular-nums}
+.actions{display:flex;gap:8px;margin-top:14px}
+.tips{padding-left:1.2em;margin:0}.tips li{margin:6px 0}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td.num,th:nth-child(4),th:nth-child(5){text-align:right}
+.muted{color:var(--muted);font-size:.85rem}
+footer{padding-bottom:32px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.chart .row{grid-template-columns:90px 1fr 60px}}
