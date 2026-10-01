@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="th">
+<head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>จุดความร้อน NASA FIRMS</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* required styles */
+
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+	position: absolute;
+	left: 0;
+	top: 0;
+	}
+.leaflet-container {
+	overflow: hidden;
+	}
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none;
+	  -webkit-user-drag: none;
+	}
+/* Prevents IE11 from highlighting tiles in blue */
+.leaflet-tile::selection {
+	background: transparent;
+}
+/* Safari renders non-retina tile on retina better with this, but Chrome is worse */
+.leaflet-safari .leaflet-tile {
+	image-rendering: -webkit-optimize-contrast;
+	}
+/* hack that prevents hw layers "stretching" when loading new tiles */
+.leaflet-safari .leaflet-tile-container {
+	width: 1600px;
+	height: 1600px;
+	-webkit-transform-origin: 0 0;
+	}
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	display: block;
+	}
+/* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */
+/* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */
+.leaflet-container .leaflet-overlay-pane svg {
+	max-width: none !important;
+	max-height: none !important;
+	}
+.leaflet-container .leaflet-marker-pane img,
+.leaflet-container .leaflet-shadow-pane img,
+.leaflet-container .leaflet-tile-pane img,
+.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile {
+	max-width: none !important;
+	max-height: none !important;
+	width: auto;
+	padding: 0;
+	}
+
+.leaflet-container img.leaflet-tile {
+	/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
+	mix-blend-mode: plus-lighter;
+}
+
+.leaflet-container.leaflet-touch-zoom {
+	-ms-touch-action: pan-x pan-y;
+	touch-action: pan-x pan-y;
+	}
+.leaflet-container.leaflet-touch-drag {
+	-ms-touch-action: pinch-zoom;
+	/* Fallback for FF which doesn't support pinch-zoom */
+	touch-action: none;
+	touch-action: pinch-zoom;
+}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+	-ms-touch-action: none;
+	touch-action: none;
+}
+.leaflet-container {
+	-webkit-tap-highlight-color: transparent;
+}
+.leaflet-container a {
+	-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+}
+.leaflet-tile {
+	filter: inherit;
+	visibility: hidden;
+	}
+.leaflet-tile-loaded {
+	visibility: inherit;
+	}
+.leaflet-zoom-box {
+	width: 0;
+	height: 0;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	z-index: 800;
+	}
+/* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
+.leaflet-overlay-pane svg {
+	-moz-user-select: none;
+	}
+
+.leaflet-pane         { z-index: 400; }
+
+.leaflet-tile-pane    { z-index: 200; }
+.leaflet-overlay-pane { z-index: 400; }
+.leaflet-shadow-pane  { z-index: 500; }
+.leaflet-marker-pane  { z-index: 600; }
+.leaflet-tooltip-pane   { z-index: 650; }
+.leaflet-popup-pane   { z-index: 700; }
+
+.leaflet-map-pane canvas { z-index: 100; }
+.leaflet-map-pane svg    { z-index: 200; }
+
+.leaflet-vml-shape {
+	width: 1px;
+	height: 1px;
+	}
+.lvml {
+	behavior: url(#default#VML);
+	display: inline-block;
+	position: absolute;
+	}
+
+
+/* control positioning */
+
+.leaflet-control {
+	position: relative;
+	z-index: 800;
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+.leaflet-top,
+.leaflet-bottom {
+	position: absolute;
+	z-index: 1000;
+	pointer-events: none;
+	}
+.leaflet-top {
+	top: 0;
+	}
+.leaflet-right {
+	right: 0;
+	}
+.leaflet-bottom {
+	bottom: 0;
+	}
+.leaflet-left {
+	left: 0;
+	}
+.leaflet-control {
+	float: left;
+	clear: both;
+	}
+.leaflet-right .leaflet-control {
+	float: right;
+	}
+.leaflet-top .leaflet-control {
+	margin-top: 10px;
+	}
+.leaflet-bottom .leaflet-control {
+	margin-bottom: 10px;
+	}
+.leaflet-left .leaflet-control {
+	margin-left: 10px;
+	}
+.leaflet-right .leaflet-control {
+	margin-right: 10px;
+	}
+
+
+/* zoom and fade animations */
+
+.leaflet-fade-anim .leaflet-popup {
+	opacity: 0;
+	-webkit-transition: opacity 0.2s linear;
+	   -moz-transition: opacity 0.2s linear;
+	        transition: opacity 0.2s linear;
+	}
+.leaflet-fade-anim .leaflet-map-pane .leaflet-popup {
+	opacity: 1;
+	}
+.leaflet-zoom-animated {
+	-webkit-transform-origin: 0 0;
+	    -ms-transform-origin: 0 0;
+	        transform-origin: 0 0;
+	}
+svg.leaflet-zoom-animated {
+	will-change: transform;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+	-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
+	   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
+	        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
+	}
+.leaflet-zoom-anim .leaflet-tile,
+.leaflet-pan-anim .leaflet-tile {
+	-webkit-transition: none;
+	   -moz-transition: none;
+	        transition: none;
+	}
+
+.leaflet-zoom-anim .leaflet-zoom-hide {
+	visibility: hidden;
+	}
+
+
+/* cursors */
+
+.leaflet-interactive {
+	cursor: pointer;
+	}
+.leaflet-grab {
+	cursor: -webkit-grab;
+	cursor:    -moz-grab;
+	cursor:         grab;
+	}
+.leaflet-crosshair,
+.leaflet-crosshair .leaflet-interactive {
+	cursor: crosshair;
+	}
+.leaflet-popup-pane,
+.leaflet-control {
+	cursor: auto;
+	}
+.leaflet-dragging .leaflet-grab,
+.leaflet-dragging .leaflet-grab .leaflet-interactive,
+.leaflet-dragging .leaflet-marker-draggable {
+	cursor: move;
+	cursor: -webkit-grabbing;
+	cursor:    -moz-grabbing;
+	cursor:         grabbing;
+	}
+
+/* marker & overlays interactivity */
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-image-layer,
+.leaflet-pane > svg path,
+.leaflet-tile-container {
+	pointer-events: none;
+	}
+
+.leaflet-marker-icon.leaflet-interactive,
+.leaflet-image-layer.leaflet-interactive,
+.leaflet-pane > svg path.leaflet-interactive,
+svg.leaflet-image-layer.leaflet-interactive path {
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+
+/* visual tweaks */
+
+.leaflet-container {
+	background: #ddd;
+	outline-offset: 1px;
+	}
+.leaflet-container a {
+	color: #0078A8;
+	}
+.leaflet-zoom-box {
+	border: 2px dotted #38f;
+	background: rgba(255,255,255,0.5);
+	}
+
+
+/* general typography */
+.leaflet-container {
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	}
+
+
+/* general toolbar styles */
+
+.leaflet-bar {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+	border-radius: 4px;
+	}
+.leaflet-bar a {
+	background-color: #fff;
+	border-bottom: 1px solid #ccc;
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+	display: block;
+	text-align: center;
+	text-decoration: none;
+	color: black;
+	}
+.leaflet-bar a,
+.leaflet-control-layers-toggle {
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	display: block;
+	}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+	background-color: #f4f4f4;
+	}
+.leaflet-bar a:first-child {
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	}
+.leaflet-bar a:last-child {
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom: none;
+	}
+.leaflet-bar a.leaflet-disabled {
+	cursor: default;
+	background-color: #f4f4f4;
+	color: #bbb;
+	}
+
+.leaflet-touch .leaflet-bar a {
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	}
+.leaflet-touch .leaflet-bar a:first-child {
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+	}
+.leaflet-touch .leaflet-bar a:last-child {
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
+	}
+
+/* zoom control */
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+	font: bold 18px 'Lucida Console', Monaco, monospace;
+	text-indent: 1px;
+	}
+
+.leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out  {
+	font-size: 22px;
+	}
+
+
+/* layers control */
+
+.leaflet-control-layers {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+	background: #fff;
+	border-radius: 5px;
+	}
+.leaflet-control-layers-toggle {
+	background-image: url(images/layers.png);
+	width: 36px;
+	height: 36px;
+	}
+.leaflet-retina .leaflet-control-layers-toggle {
+	background-image: url(images/layers-2x.png);
+	background-size: 26px 26px;
+	}
+.leaflet-touch .leaflet-control-layers-toggle {
+	width: 44px;
+	height: 44px;
+	}
+.leaflet-control-layers .leaflet-control-layers-list,
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+	display: none;
+	}
+.leaflet-control-layers-expanded .leaflet-control-layers-list {
+	display: block;
+	position: relative;
+	}
+.leaflet-control-layers-expanded {
+	padding: 6px 10px 6px 6px;
+	color: #333;
+	background: #fff;
+	}
+.leaflet-control-layers-scrollbar {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	padding-right: 5px;
+	}
+.leaflet-control-layers-selector {
+	margin-top: 2px;
+	position: relative;
+	top: 1px;
+	}
+.leaflet-control-layers label {
+	display: block;
+	font-size: 13px;
+	font-size: 1.08333em;
+	}
+.leaflet-control-layers-separator {
+	height: 0;
+	border-top: 1px solid #ddd;
+	margin: 5px -10px 5px -6px;
+	}
+
+/* Default icon URLs */
+.leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
+	background-image: url(images/marker-icon.png);
+	}
+
+
+/* attribution and scale controls */
+
+.leaflet-container .leaflet-control-attribution {
+	background: #fff;
+	background: rgba(255, 255, 255, 0.8);
+	margin: 0;
+	}
+.leaflet-control-attribution,
+.leaflet-control-scale-line {
+	padding: 0 5px;
+	color: #333;
+	line-height: 1.4;
+	}
+.leaflet-control-attribution a {
+	text-decoration: none;
+	}
+.leaflet-control-attribution a:hover,
+.leaflet-control-attribution a:focus {
+	text-decoration: underline;
+	}
+.leaflet-attribution-flag {
+	display: inline !important;
+	vertical-align: baseline !important;
+	width: 1em;
+	height: 0.6669em;
+	}
+.leaflet-left .leaflet-control-scale {
+	margin-left: 5px;
+	}
+.leaflet-bottom .leaflet-control-scale {
+	margin-bottom: 5px;
+	}
+.leaflet-control-scale-line {
+	border: 2px solid #777;
+	border-top: none;
+	line-height: 1.1;
+	padding: 2px 5px 1px;
+	white-space: nowrap;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	background: rgba(255, 255, 255, 0.8);
+	text-shadow: 1px 1px #fff;
+	}
+.leaflet-control-scale-line:not(:first-child) {
+	border-top: 2px solid #777;
+	border-bottom: none;
+	margin-top: -2px;
+	}
+.leaflet-control-scale-line:not(:first-child):not(:last-child) {
+	border-bottom: 2px solid #777;
+	}
+
+.leaflet-touch .leaflet-control-attribution,
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	box-shadow: none;
+	}
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	border: 2px solid rgba(0,0,0,0.2);
+	background-clip: padding-box;
+	}
+
+
+/* popup */
+
+.leaflet-popup {
+	position: absolute;
+	text-align: center;
+	margin-bottom: 20px;
+	}
+.leaflet-popup-content-wrapper {
+	padding: 1px;
+	text-align: left;
+	border-radius: 12px;
+	}
+.leaflet-popup-content {
+	margin: 13px 24px 13px 20px;
+	line-height: 1.3;
+	font-size: 13px;
+	font-size: 1.08333em;
+	min-height: 1px;
+	}
+.leaflet-popup-content p {
+	margin: 17px 0;
+	margin: 1.3em 0;
+	}
+.leaflet-popup-tip-container {
+	width: 40px;
+	height: 20px;
+	position: absolute;
+	left: 50%;
+	margin-top: -1px;
+	margin-left: -20px;
+	overflow: hidden;
+	pointer-events: none;
+	}
+.leaflet-popup-tip {
+	width: 17px;
+	height: 17px;
+	padding: 1px;
+
+	margin: -10px auto 0;
+	pointer-events: auto;
+
+	-webkit-transform: rotate(45deg);
+	   -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+	        transform: rotate(45deg);
+	}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+	background: white;
+	color: #333;
+	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+	}
+.leaflet-container a.leaflet-popup-close-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: none;
+	text-align: center;
+	width: 24px;
+	height: 24px;
+	font: 16px/24px Tahoma, Verdana, sans-serif;
+	color: #757575;
+	text-decoration: none;
+	background: transparent;
+	}
+.leaflet-container a.leaflet-popup-close-button:hover,
+.leaflet-container a.leaflet-popup-close-button:focus {
+	color: #585858;
+	}
+.leaflet-popup-scrolled {
+	overflow: auto;
+	}
+
+.leaflet-oldie .leaflet-popup-content-wrapper {
+	-ms-zoom: 1;
+	}
+.leaflet-oldie .leaflet-popup-tip {
+	width: 24px;
+	margin: 0 auto;
+
+	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
+	filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
+	}
+
+.leaflet-oldie .leaflet-control-zoom,
+.leaflet-oldie .leaflet-control-layers,
+.leaflet-oldie .leaflet-popup-content-wrapper,
+.leaflet-oldie .leaflet-popup-tip {
+	border: 1px solid #999;
+	}
+
+
+/* div icon */
+
+.leaflet-div-icon {
+	background: #fff;
+	border: 1px solid #666;
+	}
+
+
+/* Tooltip */
+/* Base styles for the element that has a tooltip */
+.leaflet-tooltip {
+	position: absolute;
+	padding: 6px;
+	background-color: #fff;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	color: #222;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	pointer-events: none;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+	}
+.leaflet-tooltip.leaflet-interactive {
+	cursor: pointer;
+	pointer-events: auto;
+	}
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	position: absolute;
+	pointer-events: none;
+	border: 6px solid transparent;
+	background: transparent;
+	content: "";
+	}
+
+/* Directions */
+
+.leaflet-tooltip-bottom {
+	margin-top: 6px;
+}
+.leaflet-tooltip-top {
+	margin-top: -6px;
+}
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-top:before {
+	left: 50%;
+	margin-left: -6px;
+	}
+.leaflet-tooltip-top:before {
+	bottom: 0;
+	margin-bottom: -12px;
+	border-top-color: #fff;
+	}
+.leaflet-tooltip-bottom:before {
+	top: 0;
+	margin-top: -12px;
+	margin-left: -6px;
+	border-bottom-color: #fff;
+	}
+.leaflet-tooltip-left {
+	margin-left: -6px;
+}
+.leaflet-tooltip-right {
+	margin-left: 6px;
+}
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	top: 50%;
+	margin-top: -6px;
+	}
+.leaflet-tooltip-left:before {
+	right: 0;
+	margin-right: -12px;
+	border-left-color: #fff;
+	}
+.leaflet-tooltip-right:before {
+	left: 0;
+	margin-left: -12px;
+	border-right-color: #fff;
+	}
+
+/* Printing */
+
+@media print {
+	/* Prevent printers from removing background-images of controls. */
+	.leaflet-control {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+		}
+	}
+
+/* Layout: แผนที่เต็มซ้าย แผงควบคุม+ผลคาร์บอนขวา (มือถือเรียงลงมา) */
+:root{--bg:#f4f1ee;--panel:#fff;--fg:#221b17;--mute:#6f6259;--line:#e1d9d2;--ember:#c8431a;--ember-soft:#f6ded3;--ok:#2b7a4b;--hot:#a3120f;--warm:#f08a24;--cool:#f5c542;--map:#e9e4de}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17120f;--panel:#221b17;--fg:#f1e9e3;--mute:#a8998e;--line:#3a2f28;--ember:#ff8a5c;--ember-soft:#3b2318;--ok:#5fc58a;--hot:#ff5a4d;--warm:#ff9d3d;--cool:#ffd25e;--map:#2a221d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17120f;--panel:#221b17;--fg:#f1e9e3;--mute:#a8998e;--line:#3a2f28;--ember:#ff8a5c;--ember-soft:#3b2318;--ok:#5fc58a;--hot:#ff5a4d;--warm:#ff9d3d;--cool:#ffd25e;--map:#2a221d;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 "IBM Plex Sans Thai",system-ui,sans-serif;display:flex;flex-direction:column;padding-inline:0}
+header{padding:10px 16px;display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--line);background:var(--panel)}
+h1{margin:0;font-size:1.1rem;font-weight:600}
+.src{font:12px "IBM Plex Mono",monospace;color:var(--mute)}
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 400px}
+#map{background:var(--map);min-height:380px}
+aside{overflow:auto;padding:12px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+section{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px}
+h2{margin:0 0 8px;font-size:.95rem;font-weight:600}
+label{display:block;font-size:.85rem;color:var(--mute);margin-bottom:8px}
+select,input[type=range]{display:block;width:100%;margin-top:3px;font:inherit;color:var(--fg)}
+select{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px}
+input[type=range]{accent-color:var(--ember)}
+button{font:inherit;cursor:pointer;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+button:hover{border-color:var(--ember)}
+:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+.status{padding:8px 10px;border-radius:6px;font-size:.85rem;background:var(--ember-soft)}
+.status.live{background:color-mix(in srgb,var(--ok) 18%,transparent)}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kpis div{font-size:.75rem;color:var(--mute)}
+.kpis b{display:block;font:500 1.3rem "IBM Plex Mono",monospace;color:var(--fg);font-variant-numeric:tabular-nums}
+.drop{border:1px dashed var(--mute);border-radius:6px;padding:10px;font-size:.82rem;color:var(--mute);text-align:center}
+.drop.over{border-color:var(--ember);color:var(--ember)}
+table{width:100%;border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}
+th,td{padding:4px 5px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left;color:var(--mute)}
+td.g{color:var(--ok);font-weight:600}
+.scroll{overflow-x:auto}
+.saving{margin:8px 0 0;font-weight:600;color:var(--ok)}
+.note{font-size:.76rem;color:var(--mute);margin:8px 0 0}
+a{color:var(--ember)}
+.links{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.82rem}
+.legend{display:flex;gap:10px;font-size:.75rem;color:var(--mute);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+@media(max-width:860px){body{height:auto}main{grid-template-columns:minmax(0,1fr);grid-template-rows:60vh auto}aside{overflow:visible}}
+</style>
+
+</head>
+<body>
+<header>
+  <h1>จุดความร้อนไฟป่า · NASA FIRMS (VIIRS)</h1>
+  <span class="src" id="stamp">กำลังโหลด…</span>
+</header>
+<main>
+  <div id="map" role="img" aria-label="แผนที่จุดความร้อน"></div>
+  <aside>
+    <div id="status" class="status">กำลังดึงข้อมูลจาก NASA FIRMS…</div>
+
+    <section>
+      <h2>ข้อมูลและตัวกรอง</h2>
+      <label>ชุดข้อมูล
+        <select id="feed">
+          <option value="suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_SouthEast_Asia_24h.csv">Suomi NPP VIIRS · 24 ชม.</option>
+          <option value="suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_SouthEast_Asia_48h.csv">Suomi NPP VIIRS · 48 ชม.</option>
+          <option value="suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_SouthEast_Asia_7d.csv">Suomi NPP VIIRS · 7 วัน</option>
+          <option value="noaa-20-viirs-c2/csv/J1_VIIRS_C2_SouthEast_Asia_24h.csv">NOAA-20 VIIRS · 24 ชม.</option>
+        </select>
+      </label>
+      <label>ความเชื่อมั่นขั้นต่ำ
+        <select id="conf"><option value="0">ทั้งหมด</option><option value="1">ปกติขึ้นไป (nominal)</option><option value="2">สูง (high)</option></select>
+      </label>
+      <label>FRP ขั้นต่ำ <b id="frpv">0</b> MW
+        <input id="frp" type="range" min="0" max="50" step="1" value="0">
+      </label>
+      <div class="drop" id="drop">ดึงข้อมูลสดไม่ได้? ลากไฟล์ CSV จาก FIRMS มาวางที่นี่ หรือ <button id="pick" type="button">เลือกไฟล์</button><input id="file" type="file" accept=".csv,text/csv" hidden></div>
+      <p class="links" style="margin:8px 0 0"><a id="dl" href="https://firms.modaps.eosdis.nasa.gov/active_fire/" target="_blank" rel="noopener">หน้าดาวน์โหลด CSV</a><a href="https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;@101.0,15.0,6.0z" target="_blank" rel="noopener">แผนที่ FIRMS</a></p>
+    </section>
+
+    <section>
+      <h2>สรุป (กรอบพิกัดไทยและชายแดน)</h2>
+      <div class="kpis"><div><b id="k1">–</b>จุดความร้อน</div><div><b id="k2">–</b>ความเชื่อมั่นสูง</div><div><b id="k3">–</b>FRP รวม (MW)</div></div>
+      <div class="legend" style="margin-top:8px"><span><i style="background:var(--cool)"></i>FRP ต่ำ</span><span><i style="background:var(--warm)"></i>กลาง</span><span><i style="background:var(--hot)"></i>สูง (≥ 30 MW)</span></div>
+    </section>
+
+    <section>
+      <h2>Green AI: ต้นทุนคาร์บอนของการวิเคราะห์</h2>
+      <p class="note" style="margin:0 0 8px">แบ่งพื้นที่เป็นเซลล์ 0.1° (~11 กม.) เทียบการรันโมเดลใหญ่ทุกเซลล์ กับการรันเฉพาะเซลล์ที่มีจุดความร้อนและเซลล์ข้างเคียง</p>
+      <div class="kpis" style="grid-template-columns:1fr 1fr;margin-bottom:8px">
+        <label style="margin:0">ฮาร์ดแวร์<select id="gpu"></select></label>
+        <label style="margin:0">ที่ตั้งศูนย์ข้อมูล<select id="region"></select></label>
+      </div>
+      <label>รอบวิเคราะห์ต่อวัน <b id="runsv">24</b><input id="runs" type="range" min="1" max="96" value="24"></label>
+      <div class="scroll"><table><thead><tr><th></th><th>แบบเดิม</th><th>แบบ Green</th></tr></thead><tbody id="cmp"></tbody></table></div>
+      <p class="saving" id="saving"></p>
+      <p class="note">ค่าพลังงานต่อเซลล์เป็นสมมติฐานเพื่อเปรียบเทียบ ไม่ใช่ค่าที่วัดจริง จำนวนจุดความร้อนและเซลล์ที่ใช้คำนวณมาจากข้อมูล FIRMS ที่โหลด</p>
+    </section>
+
+    <section>
+      <h2>จุดที่ FRP สูงสุด</h2>
+      <div class="scroll"><table><thead><tr><th>พิกัด</th><th>FRP (MW)</th><th>เวลา UTC</th><th></th></tr></thead><tbody id="top"></tbody></table></div>
+    </section>
+  </aside>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+'use strict';
+const FIRMS = 'https://firms.modaps.eosdis.nasa.gov/data/active_fire/';
+const BBOX = { s: 5.5, n: 20.6, w: 97.3, e: 105.8 };           // ไทยและพื้นที่ชายแดน
+const CELL = 0.1;
+const GPUS = { h100: ['NVIDIA H100', 700], a100: ['NVIDIA A100', 400], t4: ['NVIDIA T4', 70], cpu: ['CPU เซิร์ฟเวอร์', 150] };
+const REGIONS = { th: ['ไทย', 480], sg: ['สิงคโปร์', 470], us: ['สหรัฐฯ', 370], fr: ['ฝรั่งเศส', 55], se: ['สวีเดน', 40] };
+const HEAVY = 25, LIGHT = 500, PUE = 1.4, TREE = 21;            // เซลล์/วินาที (สมมติฐาน)
+// เส้นกรอบประเทศไทยแบบหยาบ ใช้เป็นจุดอ้างอิงเมื่อไม่มีแผนที่พื้นหลัง
+const TH = [[20.43,99.88],[20.1,100.4],[19.5,100.4],[18.5,101.15],[17.9,101.7],[17.9,102.7],[17.4,104.8],[16.5,104.7],[15.3,105.6],[14.4,105.2],[14.3,103.2],[14.0,102.5],[12.5,102.4],[11.7,102.9],[12.6,101.7],[13.5,100.9],[13.5,100.0],[12.6,99.95],[10.5,99.2],[9.1,99.3],[8.4,100.2],[7.2,100.6],[6.2,102.1],[6.5,100.1],[7.5,99.4],[7.9,98.3],[9.0,98.3],[9.9,98.6],[11.5,99.4],[12.0,99.1],[14.5,98.6],[15.7,98.5],[16.7,98.6],[17.8,97.7],[19.0,97.9],[20.0,98.0],[20.4,99.0]];
+const $ = id => document.getElementById(id);
+const f = (x, d = 0) => x.toLocaleString('th-TH', { maximumFractionDigits: d });
+
+for (const [k, [l, w]] of Object.entries(GPUS)) $('gpu').add(new Option(`${l} (${w} W)`, k));
+for (const [k, [l, g]] of Object.entries(REGIONS)) $('region').add(new Option(`${l} – ${g} gCO₂/kWh`, k));
+$('gpu').value = 'a100'; $('region').value = 'th';
+
+const map = L.map('map', { preferCanvas: true, worldCopyJump: false }).setView([15.2, 101], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 12, attribution: '© OpenStreetMap · NASA FIRMS' }).addTo(map);
+L.polygon(TH, { color: '#8a7b70', weight: 1, dashArray: '4 4', fill: false, interactive: false }).addTo(map);
+const layer = L.layerGroup().addTo(map);
+let rows = [], isDemo = true;
+
+// ตัวอย่างเพื่อให้หน้าไม่ว่างก่อนโหลดข้อมูลจริง (ไม่ใช่ข้อมูลจริง)
+function demoRows() {
+  const out = []; let s = 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 160; i++) out.push({ lat: 17.8 + r() * 2.4, lon: 98.2 + r() * 2.2, frp: r() * r() * 60, conf: r() < .6 ? 2 : 1, date: 'ตัวอย่าง', time: '', dn: 'D', sat: 'demo' });
+  return out;
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/); const h = lines.shift().split(',');
+  const ix = n => h.indexOf(n); const [la, lo, fr, cf, ad, at, dn, st] = ['latitude', 'longitude', 'frp', 'confidence', 'acq_date', 'acq_time', 'daynight', 'satellite'].map(ix);
+  if (la < 0 || lo < 0) throw new Error('รูปแบบ CSV ไม่ใช่ข้อมูล FIRMS');
+  const cm = { l: 0, n: 1, h: 2 };
+  return lines.map(l => l.split(',')).map(c => ({ lat: +c[la], lon: +c[lo], frp: +c[fr] || 0, conf: c[cf] in cm ? cm[c[cf]] : (+c[cf] >= 80 ? 2 : +c[cf] >= 30 ? 1 : 0), date: c[ad], time: c[at], dn: c[dn], sat: c[st] }))
+    .filter(p => p.lat >= BBOX.s && p.lat <= BBOX.n && p.lon >= BBOX.w && p.lon <= BBOX.e);
+}
+
+const col = frp => frp >= 30 ? 'var(--hot)' : frp >= 10 ? 'var(--warm)' : 'var(--cool)';
+const cssVar = v => getComputedStyle(document.documentElement).getPropertyValue(v.slice(4, -1)).trim();
+
+function render() {
+  const cmin = +$('conf').value, fmin = +$('frp').value; $('frpv').textContent = fmin;
+  const sel = rows.filter(p => p.conf >= cmin && p.frp >= fmin);
+  layer.clearLayers();
+  for (const p of sel) L.circleMarker([p.lat, p.lon], { radius: 3 + Math.min(7, Math.sqrt(p.frp)), color: cssVar('var(--panel)'), weight: .8, fillColor: cssVar(col(p.frp)), fillOpacity: .85 })
+    .bindTooltip(`${p.lat.toFixed(3)}, ${p.lon.toFixed(3)}<br>FRP ${p.frp.toFixed(1)} MW · ${p.date} ${p.time}`).addTo(layer);
+  $('k1').textContent = f(sel.length); $('k2').textContent = f(sel.filter(p => p.conf === 2).length);
+  $('k3').textContent = f(sel.reduce((a, p) => a + p.frp, 0));
+  $('top').innerHTML = [...sel].sort((a, b) => b.frp - a.frp).slice(0, 8).map(p =>
+    `<tr><td>${p.lat.toFixed(2)}, ${p.lon.toFixed(2)}</td><td>${p.frp.toFixed(1)}</td><td>${p.date.slice(5)} ${p.time.padStart(4, '0')}</td><td><a target="_blank" rel="noopener" href="https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;@${p.lon},${p.lat},11.0z">ดู</a></td></tr>`).join('') || '<tr><td colspan="4">ไม่มีจุดตามตัวกรอง</td></tr>';
+  green(sel);
+}
+
+function green(sel) {
+  const w = GPUS[$('gpu').value][1], g = REGIONS[$('region').value][1], runs = +$('runs').value; $('runsv').textContent = runs;
+  const total = Math.round((BBOX.n - BBOX.s) / CELL) * Math.round((BBOX.e - BBOX.w) / CELL);
+  const key = (i, j) => i * 100000 + j, act = new Set();
+  for (const p of sel) { const i = Math.floor((p.lat - BBOX.s) / CELL), j = Math.floor((p.lon - BBOX.w) / CELL); for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) act.add(key(i + a, j + b)); }
+  const heavyN = Math.min(total, act.size), whH = w * PUE / HEAVY / 3600, whL = w * PUE / LIGHT / 3600;
+  const naive = total * whH * runs / 1000, eco = (total * whL + heavyN * whH) * runs / 1000;
+  const co2 = k => k * g / 1000;
+  $('cmp').innerHTML = [['เซลล์ทั้งหมด', f(total), f(total)], ['เซลล์ที่รันโมเดลใหญ่', f(total), f(heavyN)], ['พลังงาน kWh/วัน', f(naive, 2), f(eco, 2)], ['CO₂ kg/วัน', f(co2(naive), 2), f(co2(eco), 2)], ['CO₂ kg/ปี', f(co2(naive) * 365), f(co2(eco) * 365)]]
+    .map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="g">${r[2]}</td></tr>`).join('');
+  const saved = (co2(naive) - co2(eco)) * 365;
+  $('saving').textContent = `ลดได้ ${f((1 - eco / naive) * 100)}% ≈ ${f(saved)} kgCO₂/ปี (เท่าต้นไม้ ~${f(saved / TREE)} ต้น/ปี)`;
+}
+
+function setData(r, live, label) {
+  rows = r; isDemo = !live;
+  const st = $('status'); st.className = 'status' + (live ? ' live' : '');
+  st.textContent = live ? `ข้อมูลจริงจาก NASA FIRMS: ${label} · ${f(r.length)} จุดในกรอบไทยและชายแดน` : label;
+  $('stamp').textContent = live ? label : 'แสดงข้อมูลตัวอย่าง (ไม่ใช่ข้อมูลจริง)';
+  if (live && r.length) map.fitBounds(L.latLngBounds(r.map(p => [p.lat, p.lon])).pad(.1));
+  render();
+}
+
+async function loadLive() {
+  const path = $('feed').value; $('status').className = 'status'; $('status').textContent = 'กำลังดึงข้อมูลจาก NASA FIRMS…';
+  $('dl').href = FIRMS + path.split('/csv/')[0] + '/csv/' ;
+  try {
+    const res = await fetch(FIRMS + path, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    setData(parseCSV(await res.text()), true, $('feed').selectedOptions[0].text + ' · โหลดเมื่อ ' + new Date().toLocaleTimeString('th-TH'));
+  } catch (e) {
+    setData(demoRows(), false, 'ดึงข้อมูลสดไม่ได้ (' + e.message + ') เบราว์เซอร์หรือโฮสต์นี้อาจบล็อกการเชื่อมต่อ NASA จึงแสดงข้อมูลตัวอย่างแทน ดาวน์โหลด CSV จาก FIRMS แล้วลากมาวางด้านล่างได้');
+  }
+}
+
+async function loadFile(file) {
+  try { setData(parseCSV(await file.text()), true, `ไฟล์ ${file.name}`); }
+  catch (e) { $('status').textContent = 'อ่านไฟล์ไม่ได้: ' + e.message; }
+}
+$('pick').onclick = () => $('file').click();
+$('file').onchange = e => e.target.files[0] && loadFile(e.target.files[0]);
+const dz = $('drop');
+dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
+dz.ondragleave = () => dz.classList.remove('over');
+dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); e.dataTransfer.files[0] && loadFile(e.dataTransfer.files[0]); };
+$('feed').onchange = loadLive; $('conf').onchange = render; $('frp').oninput = render;
+for (const id of ['gpu', 'region', 'runs']) $(id).oninput = () => green(rows.filter(p => p.conf >= +$('conf').value && p.frp >= +$('frp').value));
+
+setData(demoRows(), false, 'กำลังดึงข้อมูลจาก NASA FIRMS…');
+loadLive();
+</script>
+
+</body>
+</html>
