@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Green AI GIS – น้ำท่วม & ไฟป่า</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div>
+    <p class="badge">🌱 Green AI × GIS · ต้นแบบ</p>
+    <h1>แผนที่เสี่ยงภัยพิบัติ + คาร์บอนของ AI ที่ใช้วิเคราะห์</h1>
+  </div>
+  <div class="tabs" role="tablist">
+    <button id="tab-flood" role="tab" class="on">🌊 น้ำท่วม (ลุ่มเจ้าพระยา)</button>
+    <button id="tab-fire" role="tab">🔥 ไฟป่า (ภาคเหนือ)</button>
+  </div>
+</header>
+
+<main>
+  <div id="map" aria-label="แผนที่"></div>
+
+  <aside class="panel">
+    <section>
+      <h2 id="s-title">สถานการณ์จำลอง</h2>
+      <label><span id="drv-label"></span> <b id="drv-val"></b>
+        <input id="driver" type="range">
+      </label>
+      <label>ความเสี่ยงขั้นต่ำที่แสดง/แจ้งเตือน <b id="thr-val"></b>
+        <input id="thr" type="range" min="0.1" max="0.9" step="0.05" value="0.5">
+      </label>
+      <label class="chk"><input id="showpts" type="checkbox" checked> <span id="pts-label"></span></label>
+      <div class="kpis">
+        <div><span id="k1" class="n">–</span><span id="k1l"></span></div>
+        <div><span id="k2" class="n">–</span><span id="k2l"></span></div>
+        <div><span id="k3" class="n">–</span><span id="k3l"></span></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <section>
+      <h2>🌿 Green AI: เปรียบเทียบวิธีวิเคราะห์</h2>
+      <div class="two">
+        <label>ฮาร์ดแวร์
+          <select id="gpu"></select>
+        </label>
+        <label>ที่ตั้งศูนย์ข้อมูล
+          <select id="region"></select>
+        </label>
+      </div>
+      <label>รอบอัปเดตต่อวัน <b id="runs-val"></b>
+        <input id="runs" type="range" min="1" max="96" value="24">
+      </label>
+      <table id="cmp">
+        <thead><tr><th></th><th>แบบเดิม<br><small>โมเดลใหญ่ทุกเซลล์</small></th><th>แบบ Green<br><small>โมเดลเล็กคัดกรอง → โมเดลใหญ่เฉพาะเสี่ยง + แคช</small></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p id="saving" class="saving"></p>
+      <p class="note">⚠️ ข้อมูลพื้นที่เสี่ยงในหน้านี้เป็น<b>ข้อมูลจำลอง</b>เพื่อสาธิตการแสดงผล ไม่ใช่ข้อมูลจริง ค่าพลังงานต่อเซลล์เป็นสมมติฐานเพื่อเปรียบเทียบ (ดูใน <code>app.js</code>) หากจะใช้งานจริงให้เสียบข้อมูลจาก GISTDA / NASA FIRMS / GeoTIFF ผ่านฟังก์ชัน <code>loadHazard()</code></p>
+    </section>
+  </aside>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
