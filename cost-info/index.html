@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoST Info – อินโฟกราฟิกโครงการแบบปรับเปลี่ยนได้</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap bar">
+    <div>
+      <b>CoST Info</b>
+      <span class="muted">อินโฟกราฟิกเปิดเผยข้อมูลโครงการก่อสร้าง · ปรับเปลี่ยนได้</span>
+    </div>
+    <div class="btns">
+      <button id="print" type="button">พิมพ์ / PDF</button>
+      <button id="export" type="button" class="ghost">ส่งออก JSON</button>
+      <label class="btn ghost">นำเข้า JSON<input id="import" type="file" accept="application/json" hidden></label>
+      <button id="reset" type="button" class="ghost">คืนค่าเริ่มต้น</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap layout">
+  <aside class="editor" aria-label="แผงปรับแต่ง">
+    <details open>
+      <summary>1. ข้อมูลโครงการ</summary>
+      <div class="fields">
+        <label>หัวข้อ<input data-path="title" type="text"></label>
+        <label>คำอธิบายใต้หัวข้อ<textarea data-path="subtitle" rows="2"></textarea></label>
+        <label>ชื่อโครงการ<input data-path="project.name" type="text"></label>
+        <label>หน่วยงานเจ้าของโครงการ<input data-path="project.agency" type="text"></label>
+        <label>พื้นที่ดำเนินการ<input data-path="project.location" type="text"></label>
+        <label>ประเภทโครงการ<input data-path="project.sector" type="text"></label>
+        <label>ผู้รับจ้าง<input data-path="project.contractor" type="text"></label>
+        <div class="two">
+          <label>วันเริ่มสัญญา<input data-path="project.start" type="date"></label>
+          <label>วันสิ้นสุดสัญญา<input data-path="project.end" type="date"></label>
+        </div>
+      </div>
+    </details>
+
+    <details open>
+      <summary>2. ตัวเลขสำคัญ</summary>
+      <div class="fields">
+        <div class="two">
+          <label>งบประมาณที่ตั้งไว้ (ล้านบาท)<input data-path="project.budget" type="number" min="0" step="0.01"></label>
+          <label>มูลค่าสัญญา (ล้านบาท)<input data-path="project.contract" type="number" min="0" step="0.01"></label>
+        </div>
+        <label>ความคืบหน้าจริง (<output id="progOut"></output>%)
+          <input data-path="project.progress" type="range" min="0" max="100" step="1"></label>
+      </div>
+    </details>
+
+    <details open>
+      <summary>3. ข้อมูลที่เปิดเผยในแต่ละระยะ</summary>
+      <p class="muted hint">ติ๊กเพื่อแสดง/ซ่อนรายการ แก้ชื่อและค่าได้ เพิ่มหรือลบรายการได้</p>
+      <div id="stageEditor"></div>
+    </details>
+
+    <details open>
+      <summary>4. หน้าตาและส่วนที่แสดง</summary>
+      <div class="fields">
+        <label>ธีมสี
+          <span class="swatches" id="swatches"></span>
+          <input data-path="accent" type="color" aria-label="เลือกสีเอง">
+        </label>
+        <div class="two">
+          <label>โหมดสี
+            <select data-path="theme">
+              <option value="light">สว่าง</option><option value="dark">มืด</option><option value="auto">ตามระบบ</option>
+            </select>
+          </label>
+          <label>รูปแบบระยะโครงการ
+            <select data-path="layout">
+              <option value="timeline">เส้นเวลาแนวตั้ง</option><option value="grid">การ์ดเรียงกริด</option>
+            </select>
+          </label>
+        </div>
+        <label>ขนาดตัวอักษร (<output id="fsOut"></output>%)
+          <input data-path="fontScale" type="range" min="85" max="130" step="5"></label>
+        <fieldset>
+          <legend>ส่วนที่แสดง</legend>
+          <label class="chk"><input type="checkbox" data-path="show.facts"> ข้อมูลทั่วไป</label>
+          <label class="chk"><input type="checkbox" data-path="show.kpi"> ตัวเลขสำคัญและความคืบหน้า</label>
+          <label class="chk"><input type="checkbox" data-path="show.stages"> ข้อมูลตามระยะโครงการ</label>
+          <label class="chk"><input type="checkbox" data-path="show.note"> หมายเหตุ</label>
+        </fieldset>
+        <label>หมายเหตุ / แหล่งข้อมูล<textarea data-path="note" rows="3"></textarea></label>
+      </div>
+    </details>
+  </aside>
+
+  <section class="stage" aria-label="ตัวอย่างอินโฟกราฟิก" aria-live="polite">
+    <article id="sheet" class="sheet"></article>
+    <p class="muted foot">ข้อมูลในหน้านี้เป็นตัวอย่างเพื่อการสาธิต ไม่ใช่ข้อมูลโครงการจริง · การแก้ไขบันทึกไว้ในเบราว์เซอร์ของคุณโดยอัตโนมัติ</p>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
