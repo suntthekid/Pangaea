@@ -1,0 +1,468 @@
+<title>CoST Atlas ประเทศไทย</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: survey-sheet atlas — filter strip, lens picker, then map + reading panel side by side; evidence below. */
+:root{
+  --bg:#f3f4f2; --paper:#ffffff; --ink:#15191f; --ink-2:#4a525c; --ink-3:#7a828c;
+  --rule:#d9ddd9; --rule-2:#e9ebe8; --accent:#1f5fae; --accent-ink:#ffffff;
+  --sel:#15191f; --nodata:#e2e4e0; --nodata-hatch:#c9cdc8;
+  --seq-lo:#dfe9f7; --seq-hi:#0d366b; --risk-lo:#fbe6d9; --risk-hi:#8f2f0c;
+  --bar:#2a78d6; --good:#0b7f2a; --bad:#b7361e;
+  --f-display:"Bai Jamjuree","IBM Plex Sans Thai",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121518; --paper:#1a1e22; --ink:#eef0f1; --ink-2:#b8bfc6; --ink-3:#88909a;
+  --rule:#2f353b; --rule-2:#252a2f; --accent:#5b9be8; --accent-ink:#0b1420;
+  --sel:#ffffff; --nodata:#262b30; --nodata-hatch:#353b42;
+  --seq-lo:#1d2a3c; --seq-hi:#9cc6f7; --risk-lo:#33221a; --risk-hi:#f4a47e;
+  --bar:#3987e5; --good:#4cc46a; --bad:#f07a62; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121518; --paper:#1a1e22; --ink:#eef0f1; --ink-2:#b8bfc6; --ink-3:#88909a;
+  --rule:#2f353b; --rule-2:#252a2f; --accent:#5b9be8; --accent-ink:#0b1420;
+  --sel:#ffffff; --nodata:#262b30; --nodata-hatch:#353b42;
+  --seq-lo:#1d2a3c; --seq-hi:#9cc6f7; --risk-lo:#33221a; --risk-hi:#f4a47e;
+  --bar:#3987e5; --good:#4cc46a; --bad:#f07a62; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;padding-inline:clamp(16px,3vw,40px);padding-block:24px 56px}
+.wrap{max-width:1320px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.25}
+h1{font-size:clamp(26px,3.4vw,38px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:22px;font-weight:600}
+h3{font-size:16px;font-weight:600}
+p{margin:0}
+.mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:2px solid var(--ink);padding-bottom:14px}
+header .lede{color:var(--ink-2);max-width:68ch;margin-top:6px}
+.stamp{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);text-align:right;line-height:1.5}
+.stamp b{color:var(--ink);font-weight:500}
+
+/* filters */
+.filters{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:end}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:12px;color:var(--ink-3)}
+select{font:inherit;font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:7px 30px 7px 10px;max-width:100%;
+  appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ink-3) 50%),linear-gradient(135deg,var(--ink-3) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{font:inherit;font-size:13px;border:1px solid var(--rule);background:transparent;color:var(--ink-2);border-radius:6px;padding:7px 12px;cursor:pointer}
+.btn:hover{border-color:var(--ink-3);color:var(--ink)}
+.count{font-size:13px;color:var(--ink-2);margin-left:auto}
+
+/* lenses */
+.lenses{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.lgroup{background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.lgroup .gh{display:flex;align-items:baseline;gap:8px}
+.lgroup .tag{font-family:var(--f-mono);font-size:11px;font-weight:500;border:1px solid var(--ink-3);color:var(--ink-2);border-radius:3px;padding:0 5px;line-height:18px}
+.lgroup .gt{font-size:13px;font-weight:600;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:13px;line-height:1.35;border:1px solid var(--rule);background:var(--bg);color:var(--ink-2);border-radius:999px;padding:4px 11px;cursor:pointer;text-align:left}
+.chip:hover{color:var(--ink);border-color:var(--ink-3)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* main */
+.main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.main{grid-template-columns:1fr}}
+.mapbox{background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:14px;position:relative;min-width:0}
+.maphead{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}
+.maphead .q{color:var(--ink-2);font-size:14px}
+#map{width:100%;height:auto;display:block;max-height:78vh}
+#map path.prov{stroke:var(--paper);stroke-width:.6;cursor:pointer;transition:opacity .15s}
+#map path.prov:hover{stroke:var(--sel);stroke-width:1.4}
+#map path.prov.sel{stroke:var(--sel);stroke-width:2.2}
+#map path.prov.dim{opacity:.6}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;font-size:12px;color:var(--ink-2);margin-top:8px}
+.legend .sw{display:inline-block;width:14px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:5px}
+.legend .item{white-space:nowrap}
+.legend .dir{width:100%;color:var(--ink-3)}
+.tip{position:fixed;pointer-events:none;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:6px;padding:8px 10px;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.14);z-index:10;max-width:260px}
+.tip b{font-family:var(--f-display);font-size:14px}
+.tip .v{font-family:var(--f-mono);font-size:15px}
+
+.panel{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;min-width:0}
+.def{font-size:13.5px;color:var(--ink-2)}
+.kpi{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:8px}
+.kpi .big{font-family:var(--f-display);font-size:34px;font-weight:700;line-height:1}
+.kpi .sub{font-size:13px;color:var(--ink-3)}
+.ranks{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+@media (max-width:480px){.ranks{grid-template-columns:1fr}}
+.ranks ol{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:2px}
+.ranks li{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;padding:3px 6px;border-radius:4px;cursor:pointer}
+.ranks li:hover{background:var(--bg)}
+.ranks li .num{color:var(--ink-2)}
+.ranks .rh{font-size:12px;color:var(--ink-3)}
+.prov-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.grid-k{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px;margin-top:10px}
+@media (max-width:480px){.grid-k{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.k .l{font-size:11.5px;color:var(--ink-3);line-height:1.3}
+.k .v{font-family:var(--f-mono);font-size:16px;font-variant-numeric:tabular-nums}
+.k .v.warn{color:var(--bad)}
+.bars{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.brow{display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr) 4.6em;gap:8px;align-items:center;font-size:12.5px}
+.brow .bl{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow .track{height:10px;background:var(--rule-2);border-radius:0 3px 3px 0;overflow:hidden}
+.brow .fill{height:100%;background:var(--bar);border-radius:0 3px 3px 0}
+.brow .bv{font-family:var(--f-mono);text-align:right;color:var(--ink-2)}
+.hint{font-size:12.5px;color:var(--ink-3)}
+
+/* evidence */
+.findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.finding{background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.finding .big{font-family:var(--f-display);font-size:28px;font-weight:700;line-height:1.1}
+.finding p{font-size:13.5px;color:var(--ink-2)}
+.pill{display:inline-block;font-family:var(--f-mono);font-size:11px;border-radius:3px;padding:0 6px;line-height:18px;border:1px solid currentColor;margin-right:6px}
+.pill.e{color:var(--good)} .pill.s{color:var(--accent)} .pill.g{color:var(--bad)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:18px}
+@media (max-width:900px){.two{grid-template-columns:1fr}}
+#bidchart{width:100%;height:auto;display:block}
+#bidchart text{fill:var(--ink-2);font-family:var(--f-mono);font-size:11px}
+#bidchart .ax{stroke:var(--rule)}
+#bidchart rect.b{fill:var(--bar)}
+#bidchart rect.hit{fill:transparent;cursor:default}
+.tbl{overflow-x:auto;margin-top:8px}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:720px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--rule-2);text-align:right;white-space:nowrap}
+th{font-weight:500;color:var(--ink-3);font-size:12px;border-bottom:1px solid var(--rule);cursor:pointer;user-select:none}
+th:first-child,td:first-child{text-align:left}
+td{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+td:first-child{font-family:var(--f-body)}
+tr:hover td{background:var(--bg)}
+th[aria-sort] ::after{content:""}
+.notes{font-size:13px;color:var(--ink-2);columns:2 340px;column-gap:32px}
+.notes p{margin:0 0 10px;break-inside:avoid}
+.notes b{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Infrastructure Transparency · CoST Thailand</div>
+      <h1>CoST Atlas ประเทศไทย</h1>
+      <p class="lede">แผนที่โครงการก่อสร้างภาครัฐรายจังหวัด ดูได้หลายมุม ทั้งการเปิดเผยข้อมูล การแข่งขัน ประสิทธิภาพ ต้นทุน การกระจายการลงทุน และตัวชี้วัด ESG เลือกตัวกรองและมุมมองด้านล่าง แล้วคลิกจังหวัดเพื่อดูรายละเอียด</p>
+    </div>
+    <div class="stamp">แหล่งข้อมูล <b>AT_02102026.xlsx</b><br>ข้อมูล ณ <b>2 ต.ค. 2569</b> · <b id="nAll"></b> โครงการ</div>
+  </header>
+
+  <div class="filters" role="group" aria-label="ตัวกรอง">
+    <div class="field"><label for="fYear">ปีงบประมาณ</label><select id="fYear"></select></div>
+    <div class="field"><label for="fSec">Sector</label><select id="fSec"></select></div>
+    <div class="field"><label for="fAg">ประเภทหน่วยงาน</label><select id="fAg"></select></div>
+    <div class="field"><label for="fSt">สถานะโครงการ CoST</label><select id="fSt"></select></div>
+    <button class="btn" id="reset" type="button">ล้างตัวกรอง</button>
+    <div class="count" id="count"></div>
+  </div>
+
+  <div class="lenses" id="lenses"></div>
+
+  <div class="main">
+    <div class="mapbox">
+      <div class="maphead"><h2 id="lensTitle"></h2><p class="q" id="lensQ"></p></div>
+      <svg id="map" role="img" aria-label="แผนที่ประเทศไทยรายจังหวัด"><defs><pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="var(--nodata)"></rect><line x1="0" y1="0" x2="0" y2="5" stroke="var(--nodata-hatch)" stroke-width="2"></line></pattern></defs></svg>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="panel">
+      <div class="card">
+        <div class="eyebrow" id="lensGroup"></div>
+        <p class="def" id="lensDef" style="margin-top:4px"></p>
+        <div class="kpi"><span class="big" id="natVal"></span><span class="sub" id="natSub"></span></div>
+        <div class="ranks">
+          <div><div class="rh" id="rkTopH"></div><ol id="rkTop"></ol></div>
+          <div><div class="rh" id="rkBotH"></div><ol id="rkBot"></ol></div>
+        </div>
+      </div>
+      <div class="card" id="provCard">
+        <div class="prov-head"><h3 id="pName">ทั้งประเทศ</h3><button class="btn" id="pClear" type="button" hidden>ดูทั้งประเทศ</button></div>
+        <p class="hint" id="pHint">คลิกจังหวัดบนแผนที่หรือในอันดับเพื่อดูรายละเอียด</p>
+        <div class="grid-k" id="pK"></div>
+        <h3 style="margin-top:16px;font-size:14px">มูลค่าสัญญาแยก Sector</h3>
+        <div class="bars" id="pBars"></div>
+      </div>
+    </div>
+  </div>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <div><div class="eyebrow">ข้อค้นพบหลัก · คำนวณตามตัวกรองปัจจุบัน</div><h2 style="margin-top:4px">ข้อมูลตอบคำถาม ESG อะไรได้บ้าง</h2></div>
+    <div class="findings" id="findings"></div>
+  </section>
+
+  <section class="two">
+    <div class="card">
+      <div class="eyebrow">ธรรมาภิบาล · การแข่งขันกับการประหยัด</div>
+      <h3 style="margin-top:4px">ผู้เสนอราคายิ่งมาก ยิ่งได้ราคาต่ำกว่าราคากลาง</h3>
+      <p class="def" style="margin-top:4px">ค่ามัธยฐานของส่วนต่างระหว่างราคากลางกับราคาสัญญา แยกตามจำนวนผู้เข้าร่วมแข่งขัน</p>
+      <svg id="bidchart" viewBox="0 0 420 240" role="img" aria-label="กราฟแท่งส่วนต่างราคาตามจำนวนผู้เสนอราคา"></svg>
+    </div>
+    <div class="card" style="min-width:0">
+      <div class="eyebrow">ต้นทุนและประสิทธิภาพรายภาคส่วน</div>
+      <h3 style="margin-top:4px">เปรียบเทียบ Sector</h3>
+      <p class="def" style="margin-top:4px">คลิกหัวตารางเพื่อเรียงลำดับ</p>
+      <div class="tbl"><table id="secTable"></table></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="eyebrow">วิธีคำนวณและข้อจำกัด</div>
+    <h3 style="margin:4px 0 10px">อ่านตัวเลขเหล่านี้อย่างไร</h3>
+    <div class="notes">
+      <p><b>แผนที่</b> แบ่งสีเป็น 5 ชั้นตามควอนไทล์ของจังหวัดที่มีข้อมูลพอ ถ้าจังหวัดใดมีโครงการในตัวหารน้อยกว่า 5 โครงการ จะแสดงเป็นลายเส้นสีเทา สีโทนน้ำเงินคือยิ่งมากยิ่งดีหรือเป็นขนาด ส่วนโทนส้มคือยิ่งมากยิ่งเสี่ยง</p>
+      <p><b>มูลค่า</b> ใช้ราคาสัญญาทั้งหมด ถ้าโครงการยังไม่มีสัญญาจะใช้งบประมาณแทน ค่าต่อพื้นที่หารด้วยพื้นที่จังหวัด (ตร.กม.)</p>
+      <p><b>ส่วนต่างราคา</b> = 1 − ราคาสัญญา ÷ ราคากลาง ใช้ค่ามัธยฐานเพื่อลดผลจากค่าผิดปกติ ส่วน <b>สัญญาชิดราคากลาง</b> คือสัญญาที่มีราคาตั้งแต่ 99% ของราคากลางขึ้นไป ซึ่งเป็นสัญญาณเตือนในหลักการ red flag ของการจัดซื้อจัดจ้าง</p>
+      <p><b>แข่งขันต่ำ</b> คือมีผู้เสนอราคา 1–2 ราย โครงการที่บันทึกผู้เสนอราคาเป็น 0 (9% ของข้อมูล) ไม่ถูกนับในตัวชี้วัดการแข่งขัน เพราะน่าจะเป็นข้อมูลที่ไม่ได้บันทึก</p>
+      <p><b>ล่าช้า</b> ใช้ "จำนวนวันที่ล่าช้า" ที่มากกว่า 0 ค่าที่เกิน 1,500 วันหรือติดลบถูกตัดออกเพราะน่าจะผิดพลาด (เช่น มีค่า 23,407 วัน)</p>
+      <p><b>ดัชนีความเสี่ยงธรรมาภิบาล</b> นับสัญญาณเตือน 4 ข้อต่อโครงการ ได้แก่ เปิดเผยต่ำกว่า 75%, แข่งขันต่ำ, สัญญาชิดราคากลาง และล่าช้าเกิน 30 วัน แล้วแสดงสัดส่วนโครงการที่มีอย่างน้อย 2 ข้อ</p>
+      <p><b>E (สิ่งแวดล้อม)</b> นับ Sector ชลประทาน/ป้องกันน้ำ, บำบัดน้ำเสีย, กำจัดขยะ, พลังงาน/ไฟฟ้า และสวนสาธารณะ ส่วน <b>ความเสี่ยงสภาพอากาศ</b> ค้นคำในช่องสาเหตุล่าช้า เช่น ฝน น้ำท่วม อุทกภัย พายุ ซึ่งกรอกไว้เพียงประมาณ 8% ของโครงการ ตัวเลขนี้จึงเป็นค่าต่ำสุด</p>
+      <p><b>S (สังคม)</b> นับ Sector การศึกษา, สาธารณสุข, ประปา, ท่องเที่ยว/กีฬา และอาคาร/ที่พักอาศัย ส่วน <b>สัดส่วนท้องถิ่น</b> คือมูลค่าที่ อบต. เทศบาล อบจ. และ กทม./พัทยา เป็นผู้ดำเนินการ ใช้ดูการกระจายอำนาจ</p>
+      <p><b>ต้นทุนถนนต่อ ตร.ม.</b> ดึงความกว้าง ความยาว หรือพื้นที่จากชื่อโครงการ (2,210 โครงการ) แยกถนนคอนกรีตเสริมเหล็กกับแอสฟัลต์ ยังไม่ได้ปรับตามความหนา ไหล่ทาง หรืองานประกอบอื่น จึงใช้เทียบระดับเบื้องต้นได้เท่านั้น</p>
+      <p><b>ข้อมูลที่ยังไม่มี</b> เช่น ประชากร พิกัดโครงการ ผลการตรวจ Assurance ข้อมูลผู้รับจ้าง และข้อร้องเรียน ถ้าเพิ่มเข้ามาจะคำนวณเงินลงทุนต่อหัว การกระจุกตัวของผู้รับจ้าง และผลกระทบต่อชุมชนได้</p>
+    </div>
+  </section>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+const DATA = __DATA__;
+const GEO = __GEO__;
+</script>
+<script>
+(function(){
+const C = Object.fromEntries(DATA.cols.map((c,i)=>[c,i]));
+const P = DATA.provs, S = DATA.secs, A = DATA.ags, ST = DATA.sts;
+const rows = DATA.rows;
+const areaOf = {}, regionOf = {};
+GEO.features.forEach(f=>{areaOf[f.properties.pro_th]=f.properties.area_sqkm; regionOf[f.properties.pro_th]=f.properties.reg_royin;});
+const ENV = new Set(['ชลประทาน/ป้องกันน้ำ','บำบัดน้ำเสีย','กำจัดขยะ','พลังงาน/ไฟฟ้า','สวนสาธารณะ/สุขภาพ'].map(s=>S.indexOf(s)));
+const SOC = new Set(['อาคารการศึกษา','สาธารณสุข','ประปา','ท่องเที่ยว/กีฬา','อาคาร/ที่พักอาศัย'].map(s=>S.indexOf(s)));
+const LOCAL = new Set(['อบต.','เทศบาล','อบจ.','กทม./พัทยา'].map(s=>A.indexOf(s)));
+
+const $ = id=>document.getElementById(id);
+const fmtInt = d3.format(',.0f');
+const pct = v=> v==null||isNaN(v)?'–':(v*100).toFixed(1)+'%';
+const mb = k=> k==null?'–':(k/1000>=1000? fmtInt(k/1000):(k/1000).toFixed(1));   // thousand THB -> million THB
+const median = a=>{ if(!a.length) return null; const s=Float64Array.from(a).sort(); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; };
+
+function acc(list){
+  const o={n:list.length,val:0,discS:0,disc100:0,discLow:0,bidN:0,bidS:0,low:0,sav:[],nearN:0,near:0,dN:0,late:0,late30:0,delays:[],
+    clim:0,env:0,soc:0,local:0,flag2:0,ucC:[],ucA:[],sec:new Float64Array(S.length),secN:new Int32Array(S.length)};
+  for(const r of list){
+    const v = r[C.ctrK]!=null? r[C.ctrK] : (r[C.budgetK]||0);
+    o.val+=v; o.sec[r[C.s]]+=v; o.secN[r[C.s]]++;
+    if(ENV.has(r[C.s])) o.env+=v; if(SOC.has(r[C.s])) o.soc+=v; if(LOCAL.has(r[C.a])) o.local+=v;
+    const d=r[C.disc]; o.discS+=d; if(d>=100) o.disc100++; let fl=0; if(d<75){o.discLow++; fl++;}
+    const b=r[C.bid]; if(b>0){o.bidN++; o.bidS+=b; if(b<=2){o.low++; fl++;}}
+    if(r[C.ctrK]!=null && r[C.refK]>0){ const ratio=r[C.ctrK]/r[C.refK]; o.nearN++; if(ratio>=0.99){o.near++; fl++;} const s=1-ratio; if(s>-0.5&&s<0.7) o.sav.push(s); }
+    if(r[C.delay]!=null){o.dN++; if(r[C.delay]>0){o.late++; o.delays.push(r[C.delay]);} if(r[C.delay]>30){o.late30++; fl++;}}
+    if(r[C.cause]&1) o.clim++;
+    if(fl>=2) o.flag2++;
+    if(r[C.uc]!=null){ (r[C.rt]===1?o.ucC:o.ucA).push(r[C.uc]); }
+  }
+  return o;
+}
+const MIN=5;
+const rate=(num,den)=> den>=MIN? num/den : null;
+const LENSES = [
+  {g:'invest',key:'value',label:'มูลค่าการลงทุน',title:'มูลค่าสัญญารวม (ล้านบาท)',q:'เงินลงทุนโครงสร้างพื้นฐานลงไปที่จังหวัดไหนมากที่สุด',def:'ผลรวมราคาสัญญาของโครงการในจังหวัด (ใช้งบประมาณแทนถ้ายังไม่มีสัญญา)',ramp:'seq',
+    f:(o)=> o.n? o.val:null, fmt:v=>mb(v)+' ลบ.', nat:o=>mb(o.val)+' ลบ.', natSub:o=>fmtInt(o.n)+' โครงการ'},
+  {g:'invest',key:'density',label:'ลงทุนต่อพื้นที่',title:'มูลค่าต่อพื้นที่ (บาท/ตร.กม.)',q:'การลงทุนกระจายตัวทั่วถึงหรือกระจุกตัว เมื่อเทียบกับขนาดพื้นที่',def:'มูลค่าสัญญารวมหารด้วยพื้นที่จังหวัด ใช้ดูความเข้มข้นของการลงทุน',ramp:'seq',
+    f:(o,p)=> o.n? o.val*1000/areaOf[p]:null, fmt:v=>fmtInt(v), nat:(o)=>fmtInt(o.val*1000/513120)+' บาท/ตร.กม.', natSub:()=>'พื้นที่ประเทศ 513,120 ตร.กม.'},
+  {g:'invest',key:'count',label:'จำนวนโครงการ',title:'จำนวนโครงการที่เปิดเผยใน CoST',q:'จังหวัดไหนมีโครงการเข้าสู่ระบบ CoST มาก',def:'นับจำนวนโครงการตามตัวกรอง',ramp:'seq',
+    f:o=> o.n||null, fmt:v=>fmtInt(v), nat:o=>fmtInt(o.n), natSub:()=>'โครงการ'},
+  {g:'cost',key:'ucC',label:'ต้นทุนถนน คสล.',title:'ต้นทุนถนนคอนกรีตเสริมเหล็ก (บาท/ตร.ม.)',q:'จังหวัดไหนสร้างถนน คสล. แพงหรือถูกกว่าค่ากลาง',def:'มัธยฐานของราคาสัญญาหารพื้นที่ผิวถนนที่ดึงจากชื่อโครงการ',ramp:'risk',
+    f:o=> o.ucC.length>=MIN? median(o.ucC):null, fmt:v=>fmtInt(v), nat:o=>fmtInt(median(o.ucC)||0)+' บาท/ตร.ม.', natSub:o=>fmtInt(o.ucC.length)+' โครงการที่คำนวณได้'},
+  {g:'cost',key:'ucA',label:'ต้นทุนถนนแอสฟัลต์',title:'ต้นทุนถนนแอสฟัลต์ติก (บาท/ตร.ม.)',q:'จังหวัดไหนสร้างถนนลาดยางแพงหรือถูกกว่าค่ากลาง',def:'มัธยฐานของราคาสัญญาหารพื้นที่ผิวถนนที่ดึงจากชื่อโครงการ',ramp:'risk',
+    f:o=> o.ucA.length>=MIN? median(o.ucA):null, fmt:v=>fmtInt(v), nat:o=>fmtInt(median(o.ucA)||0)+' บาท/ตร.ม.', natSub:o=>fmtInt(o.ucA.length)+' โครงการที่คำนวณได้'},
+  {g:'cost',key:'savings',label:'ส่วนต่างจากราคากลาง',title:'ส่วนต่างราคากลางกับราคาสัญญา (มัธยฐาน)',q:'จังหวัดไหนจัดซื้อจัดจ้างได้ราคาต่ำกว่าราคากลางมาก',def:'1 − ราคาสัญญา ÷ ราคากลาง ยิ่งสูงยิ่งประหยัดงบประมาณ',ramp:'seq',
+    f:o=> o.sav.length>=MIN? median(o.sav):null, fmt:pct, nat:o=>pct(median(o.sav)), natSub:o=>'ค่าเฉลี่ย '+pct(d3.mean(o.sav))},
+  {g:'G',key:'disc',label:'การเปิดเผยข้อมูล',title:'ร้อยละการเปิดเผยข้อมูลเฉลี่ย',q:'หน่วยงานในจังหวัดไหนเปิดเผยข้อมูลตาม OC4IDS ได้ครบถ้วน',def:'ค่าเฉลี่ย "ร้อยละเปิดเผย" ของโครงการ (เทียบรายการข้อมูลที่ CoST กำหนด)',ramp:'seq',
+    f:o=> o.n>=MIN? o.discS/o.n/100:null, fmt:pct, nat:o=>pct(o.discS/o.n/100), natSub:o=>'เปิดเผยครบ 100% '+pct(o.disc100/o.n)},
+  {g:'G',key:'bid',label:'การแข่งขัน',title:'จำนวนผู้เสนอราคาเฉลี่ยต่อโครงการ',q:'ตลาดรับเหมาในจังหวัดไหนมีการแข่งขันสูง',def:'ค่าเฉลี่ยจำนวนผู้เข้าร่วมแข่งขัน (ไม่นับโครงการที่บันทึกเป็น 0)',ramp:'seq',
+    f:o=> o.bidN>=MIN? o.bidS/o.bidN:null, fmt:v=>v.toFixed(2)+' ราย', nat:o=>(o.bidS/o.bidN).toFixed(2)+' ราย', natSub:o=>'แข่งขันต่ำ (1–2 ราย) '+pct(o.low/o.bidN)},
+  {g:'G',key:'low',label:'แข่งขันต่ำ',title:'สัดส่วนโครงการที่มีผู้เสนอราคา 1–2 ราย',q:'จังหวัดไหนมีความเสี่ยงการแข่งขันไม่เพียงพอ',def:'จำนวนโครงการที่มีผู้เสนอราคา 1–2 ราย ÷ โครงการที่มีข้อมูลผู้เสนอราคา',ramp:'risk',
+    f:o=> rate(o.low,o.bidN), fmt:pct, nat:o=>pct(o.low/o.bidN), natSub:o=>fmtInt(o.low)+' โครงการ'},
+  {g:'G',key:'near',label:'สัญญาชิดราคากลาง',title:'สัดส่วนสัญญาที่ราคา ≥ 99% ของราคากลาง',q:'มีสัญญาณการเสนอราคาที่ไม่แข่งขันจริงหรือไม่',def:'สัญญาที่ราคาสัญญาตั้งแต่ 99% ของราคากลางขึ้นไป ÷ สัญญาที่มีราคากลาง',ramp:'risk',
+    f:o=> rate(o.near,o.nearN), fmt:pct, nat:o=>pct(o.near/o.nearN), natSub:o=>fmtInt(o.near)+' สัญญา'},
+  {g:'G',key:'late',label:'ส่งมอบล่าช้า',title:'สัดส่วนโครงการที่ส่งมอบล่าช้า',q:'การบริหารสัญญาในจังหวัดไหนมีปัญหาล่าช้าบ่อย',def:'โครงการที่จำนวนวันล่าช้า > 0 ÷ โครงการที่มีข้อมูล',ramp:'risk',
+    f:o=> rate(o.late,o.dN), fmt:pct, nat:o=>pct(o.late/o.dN), natSub:o=>'มัธยฐานเมื่อล่าช้า '+fmtInt(median(o.delays)||0)+' วัน'},
+  {g:'G',key:'risk',label:'ดัชนีความเสี่ยงธรรมาภิบาล',title:'สัดส่วนโครงการที่มีสัญญาณเตือน ≥ 2 ข้อ',q:'ภาพรวมความเสี่ยงด้านธรรมาภิบาลกระจุกอยู่ที่ไหน',def:'สัญญาณเตือน: เปิดเผย < 75%, แข่งขันต่ำ, ชิดราคากลาง, ล่าช้า > 30 วัน',ramp:'risk',
+    f:o=> rate(o.flag2,o.n), fmt:pct, nat:o=>pct(o.flag2/o.n), natSub:o=>fmtInt(o.flag2)+' โครงการ'},
+  {g:'E',key:'env',label:'ลงทุนด้านสิ่งแวดล้อม/น้ำ',title:'สัดส่วนมูลค่าลงทุนด้านน้ำและสิ่งแวดล้อม',q:'จังหวัดไหนลงทุนโครงสร้างพื้นฐานเพื่อสิ่งแวดล้อมและรับมือภัยน้ำ',def:'มูลค่า Sector ชลประทาน/ป้องกันน้ำ บำบัดน้ำเสีย กำจัดขยะ พลังงาน สวนสาธารณะ ÷ มูลค่ารวม',ramp:'seq',
+    f:o=> o.n>=MIN? o.env/o.val:null, fmt:pct, nat:o=>pct(o.env/o.val), natSub:o=>mb(o.env)+' ลบ.'},
+  {g:'E',key:'clim',label:'ล่าช้าจากสภาพอากาศ',title:'จำนวนโครงการที่ล่าช้าเพราะฝน/น้ำท่วม',q:'พื้นที่ไหนที่ภัยสภาพอากาศกระทบการก่อสร้าง',def:'นับโครงการที่ระบุสาเหตุล่าช้าเกี่ยวกับฝน น้ำท่วม พายุ ฯลฯ (เป็นค่าต่ำสุด เพราะกรอกสาเหตุไม่ครบ)',ramp:'risk',
+    f:o=> o.clim||null, fmt:v=>fmtInt(v)+' โครงการ', nat:o=>fmtInt(o.clim)+' โครงการ', natSub:o=>'จากที่ล่าช้าทั้งหมด '+fmtInt(o.late)},
+  {g:'S',key:'soc',label:'ลงทุนด้านสังคม',title:'สัดส่วนมูลค่าลงทุนโครงสร้างพื้นฐานทางสังคม',q:'การลงทุนตอบโจทย์บริการพื้นฐานของประชาชนแค่ไหน',def:'มูลค่า Sector การศึกษา สาธารณสุข ประปา ท่องเที่ยว/กีฬา อาคาร/ที่พักอาศัย ÷ มูลค่ารวม',ramp:'seq',
+    f:o=> o.n>=MIN? o.soc/o.val:null, fmt:pct, nat:o=>pct(o.soc/o.val), natSub:o=>mb(o.soc)+' ลบ.'},
+  {g:'S',key:'local',label:'ดำเนินการโดยท้องถิ่น',title:'สัดส่วนมูลค่าที่ อปท. เป็นผู้ดำเนินการ',q:'การลงทุนกระจายอำนาจสู่ท้องถิ่นแค่ไหน',def:'มูลค่าโครงการของ อบต. เทศบาล อบจ. กทม./พัทยา ÷ มูลค่ารวม',ramp:'seq',
+    f:o=> o.n>=MIN? o.local/o.val:null, fmt:pct, nat:o=>pct(o.local/o.val), natSub:o=>mb(o.local)+' ลบ.'},
+];
+const GROUPS=[{g:'invest',tag:'ลงทุน',t:'การกระจายการลงทุน'},{g:'cost',tag:'ต้นทุน',t:'ต้นทุนและประสิทธิภาพ'},{g:'G',tag:'G',t:'ธรรมาภิบาล'},{g:'E',tag:'E',t:'สิ่งแวดล้อม'},{g:'S',tag:'S',t:'สังคม'}];
+const GNAME=Object.fromEntries(GROUPS.map(g=>[g.g,g.t]));
+
+let state={lens:'disc',year:'',sec:'',ag:'',st:'',prov:null};
+try{const s=JSON.parse(localStorage.getItem('costAtlas')||'{}'); if(s.lens&&LENSES.some(l=>l.key===s.lens)) state.lens=s.lens;}catch(e){}
+
+// filters
+function opts(sel,label,items){ sel.innerHTML='<option value="">'+label+'</option>'+items.map(([v,t])=>`<option value="${v}">${t}</option>`).join(''); }
+const years=[...new Set(rows.map(r=>r[C.y]))].sort((a,b)=>b-a);
+opts($('fYear'),'ทุกปี',years.map(y=>[y,y]));
+opts($('fSec'),'ทุก Sector',S.map((s,i)=>[i,s]));
+opts($('fAg'),'ทุกประเภท',A.map((s,i)=>[i,s]));
+opts($('fSt'),'ทุกสถานะ',ST.map((s,i)=>[i,s]));
+[['fYear','year'],['fSec','sec'],['fAg','ag'],['fSt','st']].forEach(([id,k])=>$(id).addEventListener('change',e=>{state[k]=e.target.value; update();}));
+$('reset').onclick=()=>{state.year=state.sec=state.ag=state.st=''; ['fYear','fSec','fAg','fSt'].forEach(id=>$(id).value=''); update();};
+$('nAll').textContent=fmtInt(rows.length);
+
+// lens chips
+$('lenses').innerHTML=GROUPS.map(g=>`<div class="lgroup"><div class="gh"><span class="tag">${g.tag}</span><span class="gt">${g.t}</span></div><div class="chips">${
+  LENSES.filter(l=>l.g===g.g).map(l=>`<button type="button" class="chip" data-k="${l.key}" aria-pressed="false">${l.label}</button>`).join('')}</div></div>`).join('');
+$('lenses').addEventListener('click',e=>{const b=e.target.closest('.chip'); if(!b) return; state.lens=b.dataset.k; try{localStorage.setItem('costAtlas',JSON.stringify({lens:state.lens}))}catch(_){}; update();});
+
+// map
+const svg=d3.select('#map'); const W=560,H=980;
+svg.attr('viewBox',`0 0 ${W} ${H}`);
+const proj=d3.geoIdentity().reflectY(true).fitExtent([[8,8],[W-8,H-8]],GEO);
+const path=d3.geoPath(proj);
+const gMap=svg.append('g');
+const paths=gMap.selectAll('path').data(GEO.features).join('path').attr('class','prov').attr('d',path)
+  .on('mousemove',(ev,f)=>showTip(ev,f.properties.pro_th)).on('mouseleave',()=>$('tip').hidden=true)
+  .on('click',(ev,f)=>selectProv(f.properties.pro_th));
+const tip=$('tip');
+let cur={};
+function showTip(ev,p){
+  const L=LENSES.find(l=>l.key===state.lens); const c=cur[p];
+  tip.innerHTML=`<b>${p}</b><br><span class="v">${c&&c.v!=null?L.fmt(c.v):'ข้อมูลไม่พอ'}</span><br><span style="color:var(--ink-3)">${c?fmtInt(c.o.n):0} โครงการ · ${mb(c?c.o.val:0)} ลบ.</span>`;
+  tip.hidden=false; const x=Math.min(ev.clientX+14,window.innerWidth-tip.offsetWidth-8); tip.style.left=x+'px'; tip.style.top=(ev.clientY+14)+'px';
+}
+function selectProv(p){ state.prov = state.prov===p? null : p; update(); }
+$('pClear').onclick=()=>{state.prov=null; update();};
+
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function filtered(){
+  const y=state.year?+state.year:null, s=state.sec!==''?+state.sec:null, a=state.ag!==''?+state.ag:null, t=state.st!==''?+state.st:null;
+  return rows.filter(r=>(y==null||r[C.y]===y)&&(s==null||r[C.s]===s)&&(a==null||r[C.a]===a)&&(t==null||r[C.st]===t));
+}
+
+function update(){
+  const L=LENSES.find(l=>l.key===state.lens);
+  document.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===state.lens));
+  const list=filtered();
+  $('count').textContent=`แสดง ${fmtInt(list.length)} จาก ${fmtInt(rows.length)} โครงการ`;
+  const byP=d3.group(list,r=>P[r[C.p]]);
+  cur={}; P.forEach(p=>{const o=acc(byP.get(p)||[]); cur[p]={o,v:L.f(o,p)};});
+  const vals=P.map(p=>cur[p].v).filter(v=>v!=null&&isFinite(v));
+  const lo=css(L.ramp==='risk'?'--risk-lo':'--seq-lo'), hi=css(L.ramp==='risk'?'--risk-hi':'--seq-hi');
+  const colors=d3.quantize(d3.interpolateLab(lo,hi),5);
+  const q=d3.scaleQuantile().domain(vals).range(colors);
+  paths.attr('fill',f=>{const c=cur[f.properties.pro_th]; return c.v==null||!isFinite(c.v)?'url(#hatch)':(vals.length?q(c.v):'url(#hatch)');})
+    .classed('sel',f=>f.properties.pro_th===state.prov)
+    .classed('dim',f=>state.prov && f.properties.pro_th!==state.prov);
+  if(state.prov) paths.filter(f=>f.properties.pro_th===state.prov).raise();
+  // legend
+  const br=q.quantiles(); const ext=d3.extent(vals);
+  const edges=vals.length?[ext[0],...br,ext[1]]:[];
+  $('legend').innerHTML=(vals.length?colors.map((c,i)=>`<span class="item"><span class="sw" style="background:${c}"></span>${L.fmt(edges[i])} – ${L.fmt(edges[i+1])}</span>`).join(''):'')
+    +`<span class="item"><svg width="14" height="12" style="vertical-align:-1px;margin-right:5px"><rect width="14" height="12" rx="2" fill="url(#hatch)"/></svg>ข้อมูลไม่พอ</span>`
+    +`<span class="dir">${L.ramp==='risk'?'สีส้มเข้ม = ค่าสูง (ควรเฝ้าระวัง)':'สีน้ำเงินเข้ม = ค่าสูง'}</span>`;
+  $('lensTitle').textContent=L.title; $('lensQ').textContent=L.q;
+  $('lensGroup').textContent=GNAME[L.g]+' · ค่าทั้งประเทศ';
+  $('lensDef').textContent=L.def;
+  const nat=acc(list);
+  $('natVal').textContent=list.length?L.nat(nat):'–'; $('natSub').textContent=list.length?L.natSub(nat):'';
+  // ranks
+  const ranked=P.filter(p=>cur[p].v!=null&&isFinite(cur[p].v)).sort((a,b)=>cur[b].v-cur[a].v);
+  const li=p=>`<li data-p="${p}"><span>${p}</span><span class="num">${L.fmt(cur[p].v)}</span></li>`;
+  $('rkTopH').textContent='สูงสุด 5 จังหวัด'; $('rkBotH').textContent='ต่ำสุด 5 จังหวัด';
+  $('rkTop').innerHTML=ranked.slice(0,5).map(li).join(''); $('rkBot').innerHTML=ranked.slice(-5).reverse().map(li).join('');
+  renderProv(list, nat);
+  renderFindings(list, nat);
+  renderBid(list);
+  renderSec(list);
+}
+['rkTop','rkBot'].forEach(id=>$(id).addEventListener('click',e=>{const l=e.target.closest('li'); if(l) selectProv(l.dataset.p);}));
+
+function kv(l,v,warn){return `<div class="k"><div class="l">${l}</div><div class="v${warn?' warn':''}">${v}</div></div>`;}
+function renderProv(list,nat){
+  const p=state.prov; const o=p?cur[p].o:nat;
+  $('pName').textContent=p? p+(regionOf[p]?' · ภาค'+({North:'เหนือ',Northeast:'ตะวันออกเฉียงเหนือ',Central:'กลาง',East:'ตะวันออก',West:'ตะวันตก',South:'ใต้'}[regionOf[p]]||''):'') : 'ทั้งประเทศ';
+  $('pClear').hidden=!p; $('pHint').hidden=!!p;
+  const rk=(key)=>{ if(!p) return ''; const L=LENSES.find(l=>l.key===key); const r=P.map(q=>({q,v:L.f(cur[q].o,q)})).filter(x=>x.v!=null).sort((a,b)=>b.v-a.v); const i=r.findIndex(x=>x.q===p); return i<0?'':` <span style="color:var(--ink-3);font-size:11px">#${i+1}/${r.length}</span>`; };
+  const risky=(v,n)=> p && v!=null && n!=null && v>n*1.25;
+  const lowR=o.bidN?o.low/o.bidN:null, nlowR=nat.bidN?nat.low/nat.bidN:null;
+  const nearR=o.nearN?o.near/o.nearN:null, nnearR=nat.nearN?nat.near/nat.nearN:null;
+  const lateR=o.dN?o.late/o.dN:null, nlateR=nat.dN?nat.late/nat.dN:null;
+  const flagR=o.n?o.flag2/o.n:null, nflagR=nat.n?nat.flag2/nat.n:null;
+  $('pK').innerHTML= o.n? [
+    kv('โครงการ', fmtInt(o.n)), kv('มูลค่ารวม (ลบ.)', mb(o.val)+rk('value')), kv('เปิดเผยเฉลี่ย', pct(o.discS/o.n/100)+rk('disc')),
+    kv('ผู้เสนอราคาเฉลี่ย', o.bidN?(o.bidS/o.bidN).toFixed(2):'–'), kv('แข่งขันต่ำ', pct(lowR), risky(lowR,nlowR)), kv('ส่วนต่างราคากลาง', pct(median(o.sav))),
+    kv('ชิดราคากลาง ≥99%', pct(nearR), risky(nearR,nnearR)), kv('ส่งมอบล่าช้า', pct(lateR), risky(lateR,nlateR)), kv('สัญญาณเตือน ≥2', pct(flagR), risky(flagR,nflagR)),
+    kv('ถนน คสล. บาท/ตร.ม.', o.ucC.length?fmtInt(median(o.ucC)):'–'), kv('ถนนแอสฟัลต์ บาท/ตร.ม.', o.ucA.length?fmtInt(median(o.ucA)):'–'), kv('สัดส่วน E / S', pct(o.val?o.env/o.val:null)+' / '+pct(o.val?o.soc/o.val:null))
+  ].join('') : '<p class="hint">ไม่มีโครงการตามตัวกรองนี้</p>';
+  const secs=S.map((s,i)=>({s,v:o.sec[i],n:o.secN[i]})).filter(x=>x.n>0).sort((a,b)=>b.v-a.v);
+  const mx=d3.max(secs,x=>x.v)||1;
+  $('pBars').innerHTML=secs.slice(0,8).map(x=>`<div class="brow" title="${x.s}: ${mb(x.v)} ลบ. · ${fmtInt(x.n)} โครงการ"><span class="bl">${x.s}</span><span class="track"><span class="fill" style="display:block;width:${Math.max(1,x.v/mx*100)}%"></span></span><span class="bv">${o.val?(x.v/o.val*100).toFixed(1)+'%':'–'}</span></div>`).join('')
+    +(secs.length>8?`<p class="hint">และอีก ${secs.length-8} Sector</p>`:'');
+}
+
+function renderFindings(list,nat){
+  if(!list.length){$('findings').innerHTML='<p class="hint">ไม่มีโครงการตามตัวกรองนี้</p>';return;}
+  const by=(lo,hi)=>median(list.filter(r=>r[C.bid]>=lo&&r[C.bid]<=hi&&r[C.ctrK]!=null&&r[C.refK]>0).map(r=>1-r[C.ctrK]/r[C.refK]).filter(s=>s>-0.5&&s<0.7));
+  const s12=by(1,3), s6=by(6,99);
+  const provVals=P.map(p=>cur[p].o.val).sort((a,b)=>b-a); const top10=d3.sum(provVals.slice(0,10))/(d3.sum(provVals)||1);
+  const topSec=S.map((s,i)=>({s,v:nat.sec[i]})).sort((a,b)=>b.v-a.v)[0];
+  const F=[
+    ['g','ธรรมาภิบาล',pct(nat.near/nat.nearN),'ของสัญญามีราคาตั้งแต่ 99% ของราคากลาง ซึ่งเป็นสัญญาณว่าการแข่งขันอาจไม่เกิดขึ้นจริง ดูได้ในมุม "สัญญาชิดราคากลาง"'],
+    ['g','ธรรมาภิบาล',(s12!=null&&s6!=null)?pct(s12)+' → '+pct(s6):'–','คือส่วนต่างจากราคากลางเมื่อมีผู้เสนอราคา 1–3 ราย เทียบกับ 6 รายขึ้นไป การเพิ่มการแข่งขันจึงช่วยประหยัดงบประมาณได้โดยตรง'],
+    ['g','ธรรมาภิบาล',pct(nat.flag2/nat.n),'ของโครงการมีสัญญาณเตือนอย่างน้อย 2 ข้อ ใช้จัดลำดับพื้นที่ที่ควรสุ่มตรวจ (Assurance) ก่อนได้'],
+    ['e','สิ่งแวดล้อม',pct(nat.env/nat.val),`ของมูลค่าลงทุนอยู่ในงานน้ำและสิ่งแวดล้อม ขณะที่ ${topSec.s} ครองสัดส่วน ${pct(topSec.v/nat.val)} สะท้อนว่ายังลงทุนด้าน climate adaptation ได้อีกมาก`],
+    ['e','สิ่งแวดล้อม',fmtInt(nat.clim)+' โครงการ','ระบุว่าล่าช้าเพราะฝน น้ำท่วม หรือพายุ ถ้ากรอกสาเหตุล่าช้าให้ครบ จะได้แผนที่ความเสี่ยงสภาพอากาศต่อโครงสร้างพื้นฐานที่ใช้งานได้จริง'],
+    ['s','สังคม',pct(nat.local/nat.val),'ของมูลค่าดำเนินการโดย อปท. ตัวเลขนี้แสดงการกระจายอำนาจ แต่ก็หมายความว่าความสามารถในการเปิดเผยข้อมูลของท้องถิ่นเป็นตัวกำหนดความโปร่งใสโดยรวม'],
+    ['s','สังคม',pct(top10),'ของมูลค่าลงทุนกระจุกอยู่ใน 10 จังหวัดแรก ใช้มุม "ลงทุนต่อพื้นที่" ดูว่าจังหวัดไหนได้รับการลงทุนน้อยเมื่อเทียบกับขนาดพื้นที่'],
+  ];
+  $('findings').innerHTML=F.map(([c,t,big,p])=>`<div class="finding"><div><span class="pill ${c}">${c.toUpperCase()}</span><span class="eyebrow">${t}</span></div><div class="big">${big}</div><p>${p}</p></div>`).join('');
+}
+
+function renderBid(list){
+  const groups=[['1',1,1],['2',2,2],['3',3,3],['4',4,4],['5',5,5],['6–7',6,7],['8–10',8,10],['11+',11,999]];
+  const data=groups.map(([l,a,b])=>{const s=list.filter(r=>r[C.bid]>=a&&r[C.bid]<=b&&r[C.ctrK]!=null&&r[C.refK]>0).map(r=>1-r[C.ctrK]/r[C.refK]).filter(s=>s>-0.5&&s<0.7); return {l,v:median(s),n:s.length};});
+  const g=d3.select('#bidchart'); g.selectAll('*').remove();
+  const m={t:18,r:8,b:40,l:44}, w=420-m.l-m.r, h=240-m.t-m.b;
+  const x=d3.scaleBand().domain(data.map(d=>d.l)).range([0,w]).padding(0.28);
+  const ymax=Math.max(0.05,d3.max(data,d=>d.v||0)); const y=d3.scaleLinear().domain([0,ymax]).nice().range([h,0]);
+  const root=g.append('g').attr('transform',`translate(${m.l},${m.t})`);
+  y.ticks(4).forEach(t=>{root.append('line').attr('class','ax').attr('x1',0).attr('x2',w).attr('y1',y(t)).attr('y2',y(t)).attr('stroke-dasharray',t?'2 3':null);
+    root.append('text').attr('x',-6).attr('y',y(t)+4).attr('text-anchor','end').text((t*100).toFixed(0)+'%');});
+  data.forEach(d=>{ if(d.v==null||d.n<MIN) return; const v=Math.max(0,d.v); const bh=h-y(v); const bx=x(d.l), bw=x.bandwidth();
+    root.append('path').attr('class','b').attr('fill','var(--bar)').attr('d',`M${bx},${h}V${h-bh+Math.min(4,bh)}q0,-${Math.min(4,bh)} ${Math.min(4,bh)},-${Math.min(4,bh)}H${bx+bw-Math.min(4,bh)}q${Math.min(4,bh)},0 ${Math.min(4,bh)},${Math.min(4,bh)}V${h}Z`);
+    root.append('text').attr('x',bx+bw/2).attr('y',y(v)-5).attr('text-anchor','middle').text((d.v*100).toFixed(1)+'%');
+    root.append('rect').attr('class','hit').attr('x',bx-4).attr('y',0).attr('width',bw+8).attr('height',h)
+      .on('mousemove',ev=>{tip.innerHTML=`<b>ผู้เสนอราคา ${d.l} ราย</b><br><span class="v">${(d.v*100).toFixed(1)}%</span><br><span style="color:var(--ink-3)">${fmtInt(d.n)} สัญญา</span>`;tip.hidden=false;tip.style.left=Math.min(ev.clientX+14,window.innerWidth-tip.offsetWidth-8)+'px';tip.style.top=(ev.clientY+14)+'px';})
+      .on('mouseleave',()=>tip.hidden=true);
+  });
+  data.forEach(d=>root.append('text').attr('x',x(d.l)+x.bandwidth()/2).attr('y',h+16).attr('text-anchor','middle').text(d.l));
+  root.append('text').attr('x',w/2).attr('y',h+34).attr('text-anchor','middle').text('จำนวนผู้เสนอราคา (ราย)');
+}
+
+let secSort={k:'val',d:-1};
+function renderSec(list){
+  const by=d3.group(list,r=>r[C.s]);
+  const data=[...by].map(([i,l])=>{const o=acc(l); const ctrs=l.map(r=>r[C.ctrK]).filter(v=>v!=null);
+    return {s:S[i],n:o.n,val:o.val,med:median(ctrs),disc:o.discS/o.n/100,bid:o.bidN?o.bidS/o.bidN:null,sav:median(o.sav),near:o.nearN?o.near/o.nearN:null,late:o.dN?o.late/o.dN:null,flag:o.flag2/o.n};});
+  const cols=[['s','Sector'],['n','โครงการ'],['val','มูลค่า (ลบ.)'],['med','มัธยฐานสัญญา (ลบ.)'],['disc','เปิดเผย'],['bid','ผู้เสนอราคา'],['sav','ส่วนต่างราคากลาง'],['near','ชิด ≥99%'],['late','ล่าช้า'],['flag','เตือน ≥2']];
+  const f={s:v=>v,n:fmtInt,val:mb,med:mb,disc:pct,bid:v=>v==null?'–':v.toFixed(2),sav:pct,near:pct,late:pct,flag:pct};
+  data.sort((a,b)=>{const x=a[secSort.k],y=b[secSort.k]; if(x==null) return 1; if(y==null) return -1; return (x>y?1:x<y?-1:0)*secSort.d;});
+  $('secTable').innerHTML='<thead><tr>'+cols.map(([k,t])=>`<th data-k="${k}" aria-sort="${secSort.k===k?(secSort.d>0?'ascending':'descending'):'none'}">${t}${secSort.k===k?(secSort.d>0?' ↑':' ↓'):''}</th>`).join('')+'</tr></thead><tbody>'
+    +data.map(d=>'<tr>'+cols.map(([k])=>`<td>${f[k](d[k])}</td>`).join('')+'</tr>').join('')+'</tbody>';
+}
+$('secTable').addEventListener('click',e=>{const th=e.target.closest('th'); if(!th) return; const k=th.dataset.k; secSort= secSort.k===k?{k,d:-secSort.d}:{k,d:k==='s'?1:-1}; renderSec(filtered());});
+
+// re-colour when theme changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',update);
+new MutationObserver(update).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+update();
+})();
+</script>
