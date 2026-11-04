@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Infrastructure Transparency Dashboard</title>
+<style>
+:root{
+  color-scheme:light;
+  --page:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;
+  --grid:#e1e0d9;--axis:#c3c2b7;--ring:rgba(11,11,11,.10);
+  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;
+  --good:#0ca30c;--warning:#fab219;--serious:#ec835a;--critical:#d03b3b;
+  --seq0:#f0efec;--seq1:#cde2fb;--seq2:#9ec5f4;--seq3:#6da7ec;--seq4:#3987e5;--seq5:#256abf;--seq6:#184f95;--seq7:#0d366b;
+  --accent:#184f95;--hero1:#0d366b;--hero2:#1c5cab;--chip:#eef3fb;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --page:#0d0d0d;--surface:#1a1a19;--ink:#f0efec;--ink2:#c3c2b7;--muted:#898781;
+    --grid:#2c2c2a;--axis:#383835;--ring:rgba(255,255,255,.10);
+    --s1:#3987e5;--s2:#d95926;--s3:#199e70;
+    --seq0:#383835;--seq1:#0d366b;--seq2:#104281;--seq3:#184f95;--seq4:#1c5cab;--seq5:#2a78d6;--seq6:#5598e7;--seq7:#9ec5f4;
+    --accent:#86b6ef;--hero1:#0a2547;--hero2:#123d73;--chip:#1f2a38;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --page:#0d0d0d;--surface:#1a1a19;--ink:#f0efec;--ink2:#c3c2b7;--muted:#898781;
+  --grid:#2c2c2a;--axis:#383835;--ring:rgba(255,255,255,.10);
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;
+  --seq0:#383835;--seq1:#0d366b;--seq2:#104281;--seq3:#184f95;--seq4:#1c5cab;--seq5:#2a78d6;--seq6:#5598e7;--seq7:#9ec5f4;
+  --accent:#86b6ef;--hero1:#0a2547;--hero2:#123d73;--chip:#1f2a38;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:15px/1.55 "Noto Sans Thai","Sarabun",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1200px;margin:0 auto;padding:0 16px}
+header.hero{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;padding:28px 0 52px}
+.hero h1{margin:.25em 0 .15em;font-size:clamp(1.4rem,3.6vw,2.1rem);line-height:1.3}
+.hero p{margin:0;max-width:72ch;opacity:.92}
+.badge{display:inline-block;background:#ffffff24;border-radius:99px;padding:2px 12px;font-size:.85rem}
+.pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+.pillar{background:#ffffff1a;border:1px solid #ffffff2e;border-radius:12px;padding:10px 12px;font-size:.85rem}
+.pillar b{display:block;font-size:.95rem}
+main{margin-top:-32px;padding-bottom:40px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end;background:var(--surface);border:1px solid var(--ring);border-radius:14px;padding:12px 16px;box-shadow:0 2px 10px #0000000f}
+.filters label{font-size:.8rem;color:var(--ink2);display:flex;flex-direction:column;gap:3px;min-width:150px;flex:1}
+select,button{font:inherit;color:var(--ink);background:var(--page);border:1px solid var(--axis);border-radius:8px;padding:6px 10px}
+button{cursor:pointer}
+.filters .note{flex-basis:100%;font-size:.78rem;color:var(--muted);margin:0}
+:focus-visible{outline:3px solid #f5b70099;outline-offset:2px}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:14px 0}
+.kpi{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:12px 14px}
+.kpi span{display:block;font-size:.78rem;color:var(--ink2)}
+.kpi b{display:block;font-size:1.6rem;line-height:1.25;margin-top:2px}
+.kpi small{font-size:.75rem;color:var(--muted)}
+.tag{display:inline-block;font-size:.7rem;padding:0 8px;border-radius:99px;background:var(--chip);color:var(--accent);margin-bottom:4px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.card{background:var(--surface);border:1px solid var(--ring);border-radius:14px;padding:16px 18px;min-width:0}
+.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+.card h2{margin:0;font-size:1.02rem}
+.card .q{margin:2px 0 10px;font-size:.82rem;color:var(--ink2)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.78rem;color:var(--ink2);margin:0 0 6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{fill:var(--muted);font-size:11px;font-family:inherit}
+svg .lbl{fill:var(--ink2)}
+svg .val{fill:var(--ink);font-weight:600}
+.gridline{stroke:var(--grid);stroke-width:1}
+.baseline{stroke:var(--axis);stroke-width:1}
+.hit{fill:transparent;cursor:default}
+#tip{position:fixed;pointer-events:none;z-index:9;background:var(--surface);color:var(--ink);border:1px solid var(--ring);box-shadow:0 6px 20px #0000002a;border-radius:10px;padding:8px 10px;font-size:.8rem;max-width:280px;opacity:0;transition:opacity .1s}
+#tip b{display:block;margin-bottom:2px}
+#tip .r{display:flex;justify-content:space-between;gap:12px;color:var(--ink2)}
+#tip .r em{font-style:normal;color:var(--ink);font-variant-numeric:tabular-nums}
+.tablewrap{overflow:auto;max-height:560px;border:1px solid var(--grid);border-radius:10px}
+.flags{white-space:normal;min-width:220px}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th,td{padding:7px 8px;border-bottom:1px solid var(--grid);text-align:left;white-space:nowrap}
+th{color:var(--ink2);font-weight:600;cursor:pointer;user-select:none;position:sticky;top:0;background:var(--surface)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.flag{display:inline-flex;align-items:center;gap:3px;font-size:.72rem;border-radius:99px;padding:0 7px;margin-right:3px;border:1px solid currentColor}
+.flag.crit{color:var(--critical)}.flag.ser{color:var(--serious)}.flag.ok{color:var(--good)}
+.stage{font-size:.75rem;color:var(--ink2)}
+.iti{display:grid;gap:8px}
+.iti .row{display:grid;grid-template-columns:150px 1fr 44px;gap:8px;align-items:center;font-size:.84rem}
+.bar{height:12px;background:var(--seq0);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--s1);border-radius:6px}
+.msg{display:flex;gap:2px;height:22px;border-radius:6px;overflow:hidden;margin:6px 0}
+.msg div{display:flex;align-items:center;justify-content:center;color:#fff;font-size:.72rem}
+.concept{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.concept div{border-left:3px solid var(--s1);padding:2px 0 2px 10px;font-size:.84rem;color:var(--ink2)}
+.concept b{color:var(--ink);display:block}
+footer{color:var(--muted);font-size:.78rem;text-align:center;padding:12px 0 30px}
+@media (max-width:980px){.kpis{grid-template-columns:repeat(3,1fr)}.c4,.c5,.c6,.c7,.c8{grid-column:span 12}.concept,.pillars{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.kpis{grid-template-columns:1fr 1fr}.kpi b{font-size:1.3rem}.concept,.pillars{grid-template-columns:1fr}.iti .row{grid-template-columns:110px 1fr 40px}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <span class="badge">แนวคิดต้นแบบ · ตามหลัก CoST Infrastructure Transparency Initiative</span>
+    <h1>แดชบอร์ดความโปร่งใสโครงการโครงสร้างพื้นฐาน</h1>
+    <p>ติดตามโครงการก่อสร้างภาครัฐตลอดวงจร ตั้งแต่ระบุโครงการจนส่งมอบ: เปิดเผยข้อมูลครบแค่ไหน งบและเวลาบานปลายเท่าไร การแข่งขันจัดซื้อเป็นอย่างไร และผลตรวจสอบอิสระถูกแก้ไขแล้วหรือยัง</p>
+    <div class="pillars">
+      <div class="pillar"><b>① Disclosure</b>เปิดเผยข้อมูลตามมาตรฐาน OC4IDS</div>
+      <div class="pillar"><b>② Assurance</b>ตรวจสอบอิสระ ชี้ประเด็นที่ต้องแก้</div>
+      <div class="pillar"><b>③ Multi-stakeholder</b>รัฐ · เอกชน · ภาคประชาสังคม</div>
+      <div class="pillar"><b>④ Social Accountability</b>ประชาชนใช้ข้อมูลตรวจสอบ</div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="filters" aria-label="ตัวกรอง">
+    <label>ภาคส่วน<select id="fSector"></select></label>
+    <label>หน่วยงานเจ้าของโครงการ<select id="fAgency"></select></label>
+    <label>ภูมิภาค<select id="fRegion"></select></label>
+    <label>ขั้นตอนโครงการ<select id="fStage"></select></label>
+    <button id="reset" type="button">ล้างตัวกรอง</button>
+    <p class="note">ข้อมูลทั้งหมดในหน้านี้เป็นข้อมูลสมมติเพื่อสาธิตแนวคิด · ชื่อหน่วยงานเป็นรหัสตัวอย่าง</p>
+  </section>
+
+  <section class="kpis" id="kpis" aria-label="ตัวชี้วัดหลัก"></section>
+
+  <div class="grid">
+    <section class="card c7">
+      <span class="tag">① Disclosure</span>
+      <h2>ความครบถ้วนของการเปิดเผยข้อมูล</h2>
+      <p class="q">ร้อยละของรายการข้อมูลตามมาตรฐาน OC4IDS ที่เปิดเผยแล้ว แยกหน่วยงาน × ขั้นตอนโครงการ</p>
+      <div class="legend" id="heatLegend"></div>
+      <div id="heat"></div>
+    </section>
+    <section class="card c5">
+      <span class="tag">① Disclosure</span>
+      <h2>โครงการในแต่ละขั้นตอน</h2>
+      <p class="q">จำนวนโครงการ และมูลค่ารวม (ล้านบาท) ตามวงจรโครงการ</p>
+      <div id="pipeline"></div>
+    </section>
+
+    <section class="card c7">
+      <span class="tag">② Assurance</span>
+      <h2>งบประมาณและเวลาบานปลาย</h2>
+      <p class="q">แต่ละจุดคือ 1 โครงการที่ลงนามสัญญาแล้ว · เส้นประ = เกณฑ์เตือน (งบ +10%, เวลา +20%)</p>
+      <div class="legend"><span><i style="background:var(--s1)"></i>อยู่ในเกณฑ์</span><span><i style="background:var(--critical)"></i>⚠ เกินเกณฑ์ทั้งสองด้าน</span><span><i style="background:var(--serious)"></i>! เกินเกณฑ์ด้านเดียว</span></div>
+      <div id="scatter"></div>
+    </section>
+    <section class="card c5">
+      <span class="tag">② Assurance</span>
+      <h2>ประเด็นจากการตรวจสอบอิสระ</h2>
+      <p class="q">ประเด็นที่ทีม Assurance พบ แยกตามหมวด และสถานะการแก้ไข</p>
+      <div class="legend"><span><i style="background:var(--good)"></i>✓ แก้ไขแล้ว</span><span><i style="background:var(--warning)"></i>⋯ กำลังแก้ไข</span><span><i style="background:var(--critical)"></i>✕ ยังไม่แก้ไข</span></div>
+      <div id="issues"></div>
+    </section>
+
+    <section class="card c6">
+      <span class="tag">① Disclosure · ② Assurance</span>
+      <h2>การแข่งขันในการจัดซื้อจัดจ้าง</h2>
+      <p class="q">จำนวนผู้ยื่นข้อเสนอต่อสัญญา · ผู้ยื่นรายเดียวเป็นสัญญาณความเสี่ยง</p>
+      <div id="bidders"></div>
+    </section>
+    <section class="card c6">
+      <span class="tag">③ Multi-stakeholder · ④ Social Accountability</span>
+      <h2>ดัชนีความโปร่งใส (แนวทาง ITI) และการมีส่วนร่วม</h2>
+      <p class="q">คะแนน 0–100 ใน 4 มิติของ Infrastructure Transparency Index</p>
+      <div class="iti" id="iti"></div>
+      <h3 style="font-size:.9rem;margin:16px 0 0">องค์ประกอบคณะทำงานพหุภาคี (MSG)</h3>
+      <div class="msg" id="msg"></div>
+      <div class="legend"><span><i style="background:var(--s1)"></i>ภาครัฐ 5</span><span><i style="background:var(--s2)"></i>ภาคเอกชน 4</span><span><i style="background:var(--s3)"></i>ภาคประชาสังคม 4</span></div>
+      <h3 style="font-size:.9rem;margin:12px 0 4px">เสียงจากประชาชน</h3>
+      <div id="voice"></div>
+    </section>
+
+    <section class="card c12">
+      <span class="tag">ทุกเสาหลัก</span>
+      <h2>ทะเบียนโครงการและสัญญาณเตือน (Red flags)</h2>
+      <p class="q">คลิกหัวคอลัมน์เพื่อเรียงลำดับ · ตารางนี้คือข้อมูลชุดเดียวกับกราฟด้านบน</p>
+      <div class="tablewrap"><table id="tbl"></table></div>
+    </section>
+
+    <section class="card c12">
+      <h2>Dashboard นี้ตอบคำถามของใคร</h2>
+      <p class="q">ออกแบบให้ผู้ใช้แต่ละกลุ่มตามแนวคิด CoST หยิบข้อมูลไปใช้ได้ทันที</p>
+      <div class="concept">
+        <div><b>หน่วยงานเจ้าของโครงการ</b>เห็นช่องว่างการเปิดเผยข้อมูลของตนเอง และประเด็นที่ยังค้างแก้ไข</div>
+        <div><b>คณะทำงาน MSG</b>เลือกโครงการเสี่ยงสูงเข้าสู่กระบวนการ Assurance รอบถัดไป</div>
+        <div><b>ภาคเอกชน</b>ประเมินความเป็นธรรมของการแข่งขัน และแนวโน้มการแก้ไขสัญญา</div>
+        <div><b>ประชาชน · สื่อ · ภาคประชาสังคม</b>ติดตามโครงการในพื้นที่ และร้องเรียนพร้อมหลักฐาน</div>
+      </div>
+    </section>
+  </div>
+</main>
+<footer>ต้นแบบแนวคิด · ข้อมูลสมมติ · ไม่ใช่เว็บไซต์ทางการของ CoST</footer>
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+/* ---------- sample data (deterministic) ---------- */
+let seed = 20261104;
+const rnd = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
+const pick = a => a[Math.floor(rnd() * a.length)];
+
+const STAGES = ['ระบุโครงการ','เตรียมโครงการ','จัดซื้อจัดจ้าง','ก่อสร้าง','ส่งมอบแล้ว'];
+const SECTORS = {
+  'ถนน':['ขยายทางหลวงสาย','ก่อสร้างถนนเชื่อม','ซ่อมบำรุงถนนสาย'],
+  'สะพาน':['สะพานข้ามแม่น้ำ','สะพานลอยคนเดินข้าม','สะพานข้ามทางรถไฟ'],
+  'น้ำ':['ระบบประปาหมู่บ้าน','อ่างเก็บน้ำ','ระบบระบายน้ำเขต'],
+  'อาคารสาธารณะ':['อาคารเรียน','โรงพยาบาลชุมชน','ศูนย์ราชการ']
+};
+const AGENCIES = ['หน่วยงาน ก','หน่วยงาน ข','หน่วยงาน ค','หน่วยงาน ง','หน่วยงาน จ'];
+const REGIONS = {'เหนือ':['เชียงใหม่','ลำปาง','น่าน'],'อีสาน':['ขอนแก่น','อุดรธานี','อุบลราชธานี'],'กลาง':['นครปฐม','อยุธยา','สระบุรี'],'ใต้':['สงขลา','สุราษฎร์ธานี','ภูเก็ต'],'ตะวันออก':['ชลบุรี','ระยอง','จันทบุรี']};
+const ISSUE_CATS = ['การออกแบบ/ประมาณราคา','กระบวนการจัดซื้อ','การแก้ไขสัญญา','คุณภาพงานก่อสร้าง','การเปิดเผยข้อมูล'];
+
+const projects = [];
+const agencyQuality = [0.92,0.78,0.64,0.85,0.55];
+for (let i = 0; i < 60; i++) {
+  const sector = pick(Object.keys(SECTORS));
+  const region = pick(Object.keys(REGIONS));
+  const province = pick(REGIONS[region]);
+  const ai = Math.floor(rnd() * AGENCIES.length);
+  const r = rnd();
+  const stage = r < .1 ? 0 : r < .22 ? 1 : r < .38 ? 2 : r < .75 ? 3 : 4;
+  const budget = Math.round((sector === 'อาคารสาธารณะ' ? 40 : 60) + rnd() * rnd() * 1800);
+  const q = agencyQuality[ai];
+  const disc = STAGES.map((_, s) => s > stage ? null : Math.max(20, Math.min(100, Math.round((q - s * 0.03 + (rnd() - .5) * .25) * 100))));
+  const p = { id: 'TH-' + String(1001 + i), name: pick(SECTORS[sector]) + ' ' + province, sector, region, province, agency: AGENCIES[ai], stage, budget };
+  p.disc = disc;
+  p.discAvg = Math.round(disc.filter(v => v != null).reduce((a, b) => a + b, 0) / (stage + 1));
+  if (stage >= 2) {
+    p.bidders = rnd() < (1 - q) * .45 ? 1 : 2 + Math.floor(rnd() * rnd() * 7);
+    p.contract = Math.round(budget * (0.86 + rnd() * 0.12));
+  }
+  if (stage >= 3) {
+    const prog = stage === 4 ? 1 : 0.2 + rnd() * 0.7;
+    const risk = (1 - q) + (p.bidders === 1 ? .25 : 0);
+    p.costOver = Math.round(((rnd() - .3) * 14 + risk * rnd() * 55) * prog * 10) / 10;
+    p.timeOver = Math.round(Math.max(-5, (rnd() - .25) * 20 + risk * rnd() * 90) * prog);
+    p.current = Math.round(p.contract * (1 + p.costOver / 100));
+    p.variations = Math.max(0, Math.round(risk * rnd() * 6));
+    p.issues = ISSUE_CATS.map(() => { const n = rnd() < risk * .8 ? 1 + Math.floor(rnd() * 3) : 0; const a = Math.round(n * (stage === 4 ? .8 : .5) * rnd() * 1.6); const res = Math.min(n, a); const ip = Math.min(n - res, Math.round(rnd() * (n - res))); return [res, ip, n - res - ip]; });
+    p.complaints = Math.round(risk * rnd() * 14);
+  }
+  projects.push(p);
+}
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const fmt = (n, d = 0) => n.toLocaleString('th-TH', { maximumFractionDigits: d, minimumFractionDigits: d });
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const NS = 'http://www.w3.org/2000/svg';
+const tip = $('#tip');
+function showTip(e, title, rows) {
+  tip.innerHTML = '<b>' + esc(title) + '</b>' + rows.map(([k, v]) => `<div class="r"><span>${esc(k)}</span><em>${esc(v)}</em></div>`).join('');
+  tip.style.opacity = 1;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + w > innerWidth - 8) x = e.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = e.clientY - h - 14;
+  tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+}
+const hideTip = () => tip.style.opacity = 0;
+function bindTip(el, title, rows) {
+  el.addEventListener('mousemove', e => showTip(e, title, rows));
+  el.addEventListener('mouseleave', hideTip);
+}
+function svg(w, h) { const s = document.createElementNS(NS, 'svg'); s.setAttribute('viewBox', `0 0 ${w} ${h}`); s.setAttribute('role', 'img'); return s; }
+function el(tag, attrs, parent, text) { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (text != null) n.textContent = text; parent && parent.appendChild(n); return n; }
+/* bar with 4px rounded data-end, square at baseline (horizontal) */
+function hbarPath(x, y, w, h, r = 4) { r = Math.min(r, w, h / 2); if (w <= 0) return ''; return `M${x},${y}h${w - r}a${r},${r} 0 0 1 ${r},${r}v${h - 2 * r}a${r},${r} 0 0 1 -${r},${r}h-${w - r}z`; }
+function vbarPath(x, y, w, h, r = 4) { r = Math.min(r, h, w / 2); if (h <= 0) return ''; return `M${x},${y + h}v-${h - r}a${r},${r} 0 0 1 ${r},-${r}h${w - 2 * r}a${r},${r} 0 0 1 ${r},${r}v${h - r}z`; }
+
+/* ---------- filters ---------- */
+const F = { sector: '', agency: '', region: '', stage: '' };
+function fillSelect(id, label, opts, key) {
+  const s = $(id);
+  s.innerHTML = `<option value="">${label}</option>` + opts.map((o, i) => `<option value="${key === 'stage' ? i : esc(o)}">${esc(o)}</option>`).join('');
+  s.addEventListener('change', () => { F[key] = s.value; render(); });
+}
+fillSelect('#fSector', 'ทุกภาคส่วน', Object.keys(SECTORS), 'sector');
+fillSelect('#fAgency', 'ทุกหน่วยงาน', AGENCIES, 'agency');
+fillSelect('#fRegion', 'ทุกภูมิภาค', Object.keys(REGIONS), 'region');
+fillSelect('#fStage', 'ทุกขั้นตอน', STAGES, 'stage');
+$('#reset').addEventListener('click', () => { for (const k in F) F[k] = ''; document.querySelectorAll('.filters select').forEach(s => s.value = ''); render(); });
+const filtered = () => projects.filter(p => (!F.sector || p.sector === F.sector) && (!F.agency || p.agency === F.agency) && (!F.region || p.region === F.region) && (F.stage === '' || p.stage === +F.stage));
+
+const flagsOf = p => {
+  const f = [];
+  if (p.discAvg < 60) f.push(['crit', '⚠ เปิดเผยข้อมูล <60%']);
+  if (p.bidders === 1) f.push(['crit', '⚠ ผู้ยื่นรายเดียว']);
+  if (p.costOver > 10) f.push([p.costOver > 20 ? 'crit' : 'ser', (p.costOver > 20 ? '⚠' : '!') + ' งบเกิน ' + fmt(p.costOver, 1) + '%']);
+  if (p.timeOver > 20) f.push([p.timeOver > 40 ? 'crit' : 'ser', (p.timeOver > 40 ? '⚠' : '!') + ' ล่าช้า ' + p.timeOver + '%']);
+  if (p.issues && p.issues.some(c => c[2] > 0)) f.push(['ser', '! ประเด็นค้างแก้']);
+  return f;
+};
+
+/* ---------- KPIs ---------- */
+function kpis(list) {
+  const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+  const contracted = list.filter(p => p.bidders != null), built = list.filter(p => p.costOver != null);
+  const allIss = built.flatMap(p => p.issues);
+  const tot = allIss.reduce((a, c) => a + c[0] + c[1] + c[2], 0), res = allIss.reduce((a, c) => a + c[0], 0);
+  const single = contracted.filter(p => p.bidders === 1).length;
+  const items = [
+    ['โครงการทั้งหมด', fmt(list.length), 'มูลค่า ' + fmt(list.reduce((a, p) => a + p.budget, 0) / 1000, 1) + ' พันล้านบาท'],
+    ['การเปิดเผยข้อมูลเฉลี่ย', fmt(avg(list.map(p => p.discAvg))) + '%', 'ของรายการข้อมูล OC4IDS'],
+    ['งบบานปลายเฉลี่ย', (built.length ? fmt(avg(built.map(p => p.costOver)), 1) : '–') + '%', 'เทียบมูลค่าสัญญาเดิม'],
+    ['เวลาล่าช้าเฉลี่ย', (built.length ? fmt(avg(built.map(p => p.timeOver))) : '–') + '%', 'เทียบระยะเวลาตามสัญญา'],
+    ['สัญญาที่มีผู้ยื่นรายเดียว', contracted.length ? fmt(single / contracted.length * 100) + '%' : '–', fmt(single) + ' จาก ' + fmt(contracted.length) + ' สัญญา'],
+    ['ประเด็น Assurance ที่แก้แล้ว', tot ? fmt(res / tot * 100) + '%' : '–', fmt(res) + ' จาก ' + fmt(tot) + ' ประเด็น']
+  ];
+  $('#kpis').innerHTML = items.map(([a, b, c]) => `<div class="kpi"><span>${a}</span><b>${b}</b><small>${c}</small></div>`).join('');
+}
+
+/* ---------- heatmap ---------- */
+const SEQ = ['--seq1', '--seq2', '--seq3', '--seq4', '--seq5', '--seq6', '--seq7'];
+const seqColor = v => css(SEQ[Math.min(6, Math.max(0, Math.floor((v - 30) / 10)))]);
+function heat(list) {
+  const agencies = AGENCIES.filter(a => list.some(p => p.agency === a));
+  const W = 640, L = 86, T = 22, cw = (W - L) / STAGES.length, ch = 34, H = T + agencies.length * ch + 4;
+  const s = svg(W, Math.max(H, 60));
+  STAGES.forEach((st, j) => el('text', { x: L + cw * j + cw / 2, y: 14, 'text-anchor': 'middle', class: 'lbl' }, s, st));
+  agencies.forEach((a, i) => {
+    el('text', { x: L - 8, y: T + i * ch + ch / 2 + 4, 'text-anchor': 'end', class: 'lbl' }, s, a);
+    STAGES.forEach((st, j) => {
+      const vals = list.filter(p => p.agency === a && p.disc[j] != null).map(p => p.disc[j]);
+      const x = L + cw * j + 1, y = T + i * ch + 1;
+      if (!vals.length) { el('rect', { x, y, width: cw - 2, height: ch - 2, rx: 4, fill: css('--seq0') }, s); el('text', { x: x + cw / 2 - 1, y: y + ch / 2 + 3, 'text-anchor': 'middle' }, s, '–'); return; }
+      const v = Math.round(vals.reduce((x, y) => x + y, 0) / vals.length);
+      const r = el('rect', { x, y, width: cw - 2, height: ch - 2, rx: 4, fill: seqColor(v) }, s);
+      const idx = Math.min(6, Math.max(0, Math.floor((v - 30) / 10))), th = document.documentElement.dataset.theme, isDark = th === 'dark' || (th !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches), dark = isDark ? idx < 5 : idx >= 4;
+      el('text', { x: x + cw / 2 - 1, y: y + ch / 2 + 4, 'text-anchor': 'middle', style: `fill:${dark ? '#fff' : '#0b0b0b'};font-weight:600;font-size:12px` }, s, v + '%');
+      bindTip(r, a + ' · ' + st, [['เปิดเผยเฉลี่ย', v + '%'], ['จำนวนโครงการ', vals.length], ['ต่ำสุด', Math.min(...vals) + '%']]);
+    });
+  });
+  const box = $('#heat'); box.innerHTML = ''; box.appendChild(s);
+  if (!agencies.length) box.innerHTML = '<p class="q">ไม่มีข้อมูลตามตัวกรอง</p>';
+  $('#heatLegend').innerHTML = '<span>น้อย</span>' + SEQ.map(v => `<i style="background:var(${v});margin:0"></i>`).join('') + '<span>มาก (30% → 100%)</span>';
+}
+
+/* ---------- pipeline ---------- */
+function pipeline(list) {
+  const W = 460, L = 96, R = 150, bh = 22, gap = 14, H = STAGES.length * (bh + gap);
+  const s = svg(W, H);
+  const counts = STAGES.map((_, i) => list.filter(p => p.stage === i));
+  const max = Math.max(1, ...counts.map(c => c.length));
+  counts.forEach((c, i) => {
+    const y = i * (bh + gap) + 4, w = (W - L - R) * c.length / max;
+    el('text', { x: L - 8, y: y + bh / 2 + 4, 'text-anchor': 'end', class: 'lbl' }, s, STAGES[i]);
+    el('path', { d: hbarPath(L, y, Math.max(w, c.length ? 3 : 0), bh), fill: css('--s1') }, s);
+    const val = c.reduce((a, p) => a + p.budget, 0);
+    el('text', { x: L + w + 6, y: y + bh / 2 + 4, class: 'val' }, s, c.length + ' โครงการ');
+    el('text', { x: W, y: y + bh / 2 + 4, 'text-anchor': 'end' }, s, fmt(val) + ' ลบ.');
+    const hit = el('rect', { x: 0, y: y - 4, width: W, height: bh + 8, class: 'hit' }, s);
+    bindTip(hit, STAGES[i], [['จำนวนโครงการ', c.length], ['มูลค่ารวม', fmt(val) + ' ล้านบาท'], ['เปิดเผยข้อมูลเฉลี่ย', c.length ? fmt(c.reduce((a, p) => a + p.discAvg, 0) / c.length) + '%' : '–']]);
+  });
+  el('line', { x1: L, x2: L, y1: 0, y2: H, class: 'baseline' }, s);
+  const box = $('#pipeline'); box.innerHTML = ''; box.appendChild(s);
+}
+
+/* ---------- scatter ---------- */
+function scatter(list) {
+  const pts = list.filter(p => p.costOver != null);
+  const W = 640, H = 320, L = 56, B = 36, T = 10, R = 12;
+  const xMin = -10, xMax = Math.max(60, ...pts.map(p => p.timeOver)) + 5, yMin = -10, yMax = Math.max(30, ...pts.map(p => p.costOver)) + 3;
+  const X = v => L + (v - xMin) / (xMax - xMin) * (W - L - R), Y = v => T + (1 - (v - yMin) / (yMax - yMin)) * (H - T - B);
+  const s = svg(W, H);
+  for (let v = 0; v <= yMax; v += 10) { el('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), class: v === 0 ? 'baseline' : 'gridline' }, s); el('text', { x: L - 6, y: Y(v) + 4, 'text-anchor': 'end' }, s, v + '%'); }
+  for (let v = 0; v <= xMax; v += 20) { el('line', { x1: X(v), x2: X(v), y1: T, y2: H - B, class: v === 0 ? 'baseline' : 'gridline' }, s); el('text', { x: X(v), y: H - B + 16, 'text-anchor': 'middle' }, s, v + '%'); }
+  el('text', { x: (L + W) / 2, y: H - 4, 'text-anchor': 'middle', class: 'lbl' }, s, 'เวลาล่าช้า (% ของระยะเวลาตามสัญญา) →');
+  el('text', { x: 6, y: (H - B) / 2, transform: `rotate(-90 6 ${(H - B) / 2})`, 'text-anchor': 'middle', class: 'lbl' }, s, 'งบบานปลาย (%) →');
+  el('line', { x1: X(20), x2: X(20), y1: T, y2: H - B, stroke: css('--critical'), 'stroke-dasharray': '4 4', 'stroke-width': 1 }, s);
+  el('line', { x1: L, x2: W - R, y1: Y(10), y2: Y(10), stroke: css('--critical'), 'stroke-dasharray': '4 4', 'stroke-width': 1 }, s);
+  pts.sort((a, b) => a.budget - b.budget).forEach(p => {
+    const both = p.costOver > 10 && p.timeOver > 20, one = p.costOver > 10 || p.timeOver > 20;
+    const r = 4 + Math.sqrt(p.budget) / 7;
+    const c = el('circle', { cx: X(p.timeOver), cy: Y(p.costOver), r, fill: css(both ? '--critical' : one ? '--serious' : '--s1'), 'fill-opacity': .85, stroke: css('--surface'), 'stroke-width': 2 }, s);
+    if (both && p.budget > 500) el('text', { x: X(p.timeOver) + r + 4, y: Y(p.costOver) + 4, class: 'lbl', style: 'font-size:10px' }, s, p.id);
+    const hit = el('circle', { cx: X(p.timeOver), cy: Y(p.costOver), r: Math.max(r, 9), class: 'hit' }, s);
+    bindTip(hit, p.id + ' ' + p.name, [['หน่วยงาน', p.agency], ['มูลค่าสัญญา', fmt(p.contract) + ' ลบ.'], ['งบบานปลาย', fmt(p.costOver, 1) + '%'], ['เวลาล่าช้า', p.timeOver + '%'], ['แก้ไขสัญญา', p.variations + ' ครั้ง'], ['ผู้ยื่นข้อเสนอ', p.bidders + ' ราย']]);
+  });
+  el('text', { x: W - R, y: T + 12, 'text-anchor': 'end', style: `fill:${css('--critical')};font-size:11px` }, s, 'โซนเสี่ยงสูง');
+  const box = $('#scatter'); box.innerHTML = ''; box.appendChild(s);
+  if (!pts.length) box.innerHTML = '<p class="q">ยังไม่มีโครงการที่อยู่ในขั้นก่อสร้างตามตัวกรอง</p>';
+}
+
+/* ---------- assurance issues (stacked) ---------- */
+function issues(list) {
+  const built = list.filter(p => p.issues);
+  const sums = ISSUE_CATS.map((_, i) => [0, 1, 2].map(k => built.reduce((a, p) => a + p.issues[i][k], 0)));
+  const W = 460, L = 138, R = 34, bh = 20, gap = 16, H = ISSUE_CATS.length * (bh + gap);
+  const max = Math.max(1, ...sums.map(s => s[0] + s[1] + s[2]));
+  const cols = ['--good', '--warning', '--critical'], names = ['✓ แก้ไขแล้ว', '⋯ กำลังแก้ไข', '✕ ยังไม่แก้ไข'];
+  const s = svg(W, H);
+  sums.forEach((sm, i) => {
+    const y = i * (bh + gap) + 4; let x = L; const tot = sm[0] + sm[1] + sm[2];
+    el('text', { x: L - 8, y: y + bh / 2 + 4, 'text-anchor': 'end', class: 'lbl' }, s, ISSUE_CATS[i]);
+    sm.forEach((v, k) => {
+      if (!v) return;
+      const w = (W - L - R) * v / max;
+      const last = sm.slice(k + 1).every(z => !z);
+      el(last ? 'path' : 'rect', last ? { d: hbarPath(x, y, w - 2, bh), fill: css(cols[k]) } : { x, y, width: Math.max(0, w - 2), height: bh, fill: css(cols[k]) }, s);
+      x += w;
+    });
+    el('text', { x: x + 4, y: y + bh / 2 + 4, class: 'val' }, s, tot);
+    const hit = el('rect', { x: 0, y: y - 4, width: W, height: bh + 8, class: 'hit' }, s);
+    bindTip(hit, ISSUE_CATS[i], sm.map((v, k) => [names[k], v]).concat([['รวม', tot]]));
+  });
+  el('line', { x1: L, x2: L, y1: 0, y2: H, class: 'baseline' }, s);
+  const box = $('#issues'); box.innerHTML = ''; box.appendChild(s);
+}
+
+/* ---------- bidders histogram ---------- */
+function bidders(list) {
+  const c = list.filter(p => p.bidders != null);
+  const bins = ['1 ราย', '2 ราย', '3 ราย', '4 ราย', '5 ราย', '6+ ราย'];
+  const n = bins.map((_, i) => c.filter(p => i === 5 ? p.bidders >= 6 : p.bidders === i + 1).length);
+  const W = 560, H = 220, L = 30, B = 28, T = 18, max = Math.max(1, ...n);
+  const bw = (W - L) / bins.length;
+  const s = svg(W, H);
+  const Y = v => T + (1 - v / max) * (H - T - B);
+  const step = max > 10 ? 5 : 2;
+  for (let v = 0; v <= max; v += step) { el('line', { x1: L, x2: W, y1: Y(v), y2: Y(v), class: v ? 'gridline' : 'baseline' }, s); el('text', { x: L - 6, y: Y(v) + 4, 'text-anchor': 'end' }, s, v); }
+  n.forEach((v, i) => {
+    const x = L + i * bw + bw * .2, w = bw * .6;
+    el('path', { d: vbarPath(x, Y(v), w, H - B - Y(v)), fill: css(i === 0 ? '--critical' : '--s1') }, s);
+    el('text', { x: x + w / 2, y: Y(v) - 5, 'text-anchor': 'middle', class: 'val' }, s, v);
+    el('text', { x: x + w / 2, y: H - B + 16, 'text-anchor': 'middle', class: 'lbl' }, s, (i === 0 ? '⚠ ' : '') + bins[i]);
+    const hit = el('rect', { x: L + i * bw, y: T, width: bw, height: H - T - B, class: 'hit' }, s);
+    const share = c.length ? fmt(v / c.length * 100) + '%' : '–';
+    bindTip(hit, 'ผู้ยื่นข้อเสนอ ' + bins[i], [['จำนวนสัญญา', v], ['สัดส่วน', share], ['มูลค่ารวม', fmt(c.filter(p => i === 5 ? p.bidders >= 6 : p.bidders === i + 1).reduce((a, p) => a + p.contract, 0)) + ' ลบ.']]);
+  });
+  const box = $('#bidders'); box.innerHTML = ''; box.appendChild(s);
+}
+
+/* ---------- ITI, MSG, voice ---------- */
+function participation(list) {
+  const iti = [['สภาพแวดล้อมเชิงสถาบัน', 72], ['ศักยภาพและกระบวนการ', 61], ['การมีส่วนร่วมของประชาชน', 48], ['การเปิดเผยข้อมูล', Math.round(list.reduce((a, p) => a + p.discAvg, 0) / Math.max(1, list.length))]];
+  $('#iti').innerHTML = iti.map(([k, v]) => `<div class="row"><span>${k}</span><div class="bar"><i style="width:${v}%"></i></div><b>${v}</b></div>`).join('');
+  $('#msg').innerHTML = [[5, '--s1', 'ภาครัฐ'], [4, '--s2', 'เอกชน'], [4, '--s3', 'ประชาสังคม']].map(([n, c, t]) => `<div style="flex:${n};background:var(${c})">${t}</div>`).join('');
+  const built = list.filter(p => p.complaints != null);
+  const comp = built.reduce((a, p) => a + p.complaints, 0);
+  const top = built.slice().sort((a, b) => b.complaints - a.complaints).slice(0, 3);
+  $('#voice').innerHTML = `<p class="q" style="margin:0 0 4px">เรื่องร้องเรียน/ข้อสังเกตจากประชาชน <b style="color:var(--ink)">${fmt(comp)}</b> เรื่อง จาก ${fmt(built.length)} โครงการ · ถูกส่งต่อเข้ากระบวนการ Assurance</p>` +
+    (top.length ? '<ul style="margin:0;padding-left:1.1em;font-size:.82rem;color:var(--ink2)">' + top.map(p => `<li>${esc(p.id)} ${esc(p.name)} — ${p.complaints} เรื่อง</li>`).join('') + '</ul>' : '');
+}
+
+/* ---------- table ---------- */
+let sortKey = 'flags', sortDir = -1;
+const COLS = [
+  ['id', 'รหัส'], ['name', 'โครงการ'], ['agency', 'หน่วยงาน'], ['stage', 'ขั้นตอน'], ['budget', 'งบ (ลบ.)', 1], ['discAvg', 'เปิดเผย', 1], ['bidders', 'ผู้ยื่น', 1], ['costOver', 'งบเกิน', 1], ['timeOver', 'ล่าช้า', 1], ['flags', 'สัญญาณเตือน']
+];
+function table(list) {
+  const rows = list.map(p => ({ ...p, flagsArr: flagsOf(p), flags: flagsOf(p).reduce((a, f) => a + (f[0] === 'crit' ? 2 : 1), 0) }));
+  rows.sort((a, b) => { const x = a[sortKey] ?? -1e9, y = b[sortKey] ?? -1e9; return (x > y ? 1 : x < y ? -1 : 0) * sortDir; });
+  const head = '<thead><tr>' + COLS.map(([k, t, n]) => `<th data-k="${k}" class="${n ? 'n' : ''}" aria-sort="${sortKey === k ? (sortDir > 0 ? 'ascending' : 'descending') : 'none'}">${t}${sortKey === k ? (sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('') + '</tr></thead>';
+  const body = '<tbody>' + rows.map(p => `<tr><td>${p.id}</td><td>${esc(p.name)}<br><span class="stage">${esc(p.sector)} · ${esc(p.province)}</span></td><td>${p.agency}</td><td class="stage">${STAGES[p.stage]}</td><td class="n">${fmt(p.budget)}</td><td class="n">${p.discAvg}%</td><td class="n">${p.bidders ?? '–'}</td><td class="n">${p.costOver != null ? fmt(p.costOver, 1) + '%' : '–'}</td><td class="n">${p.timeOver != null ? p.timeOver + '%' : '–'}</td><td class="flags">${p.flagsArr.length ? p.flagsArr.map(([c, t]) => `<span class="flag ${c}">${t}</span>`).join('') : '<span class="flag ok">✓ ปกติ</span>'}</td></tr>`).join('') + '</tbody>';
+  const t = $('#tbl'); t.innerHTML = head + body;
+  t.querySelectorAll('th').forEach(th => th.addEventListener('click', () => { const k = th.dataset.k; sortDir = sortKey === k ? -sortDir : -1; sortKey = k; table(filtered()); }));
+}
+
+function render() { const l = filtered(); kpis(l); heat(l); pipeline(l); scatter(l); issues(l); bidders(l); participation(l); table(l); }
+render();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
+})();
+</script>
+</body>
+</html>
