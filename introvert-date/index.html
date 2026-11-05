@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiet Date – เที่ยวกับแฟนสไตล์ Introvert</title>
+<meta name="description" content="ค้นหาสถานที่เที่ยวเงียบ ๆ คนน้อย และวางแผนเดตแบบไม่หมดแบตสังคม">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="badge">🌙 Quiet Date · เที่ยวสไตล์ Introvert</p>
+    <h1>เดตแบบเงียบ ๆ สบายใจ ไม่หมดแบต</h1>
+    <p class="sub">ค้นหาที่เที่ยวคนน้อย บรรยากาศสงบ แล้ววางแผนทริปกับแฟนพร้อมช่วงพักชาร์จพลังสังคมในตัว</p>
+    <nav class="tabs" role="tablist">
+      <button role="tab" class="tab" aria-selected="true" data-tab="explore">🔍 ค้นหาที่เที่ยว</button>
+      <button role="tab" class="tab" aria-selected="false" data-tab="plan">🗓️ วางแผนเที่ยว <span id="planCount" class="pill">0</span></button>
+      <button role="tab" class="tab" aria-selected="false" data-tab="tips">🫧 ทริคสำหรับ Introvert</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ค้นหา -->
+  <section id="tab-explore" class="panel" role="tabpanel">
+    <div class="card filters">
+      <label class="search">ค้นหา
+        <input id="q" type="search" placeholder="เช่น คาเฟ่, ห้องสมุด, ภูเขา, เชียงใหม่…" autocomplete="off">
+      </label>
+      <div class="frow">
+        <label>เมือง/พื้นที่
+          <select id="city"><option value="">ทั้งหมด</option></select>
+        </label>
+        <label>ประเภท
+          <select id="cat"><option value="">ทั้งหมด</option></select>
+        </label>
+        <label>งบประมาณ
+          <select id="budget">
+            <option value="3">ไม่จำกัด</option>
+            <option value="1">฿ ประหยัด</option>
+            <option value="2">฿฿ ปานกลาง</option>
+          </select>
+        </label>
+        <label>ในร่ม/กลางแจ้ง
+          <select id="setting">
+            <option value="">ทั้งหมด</option>
+            <option value="in">ในร่ม</option>
+            <option value="out">กลางแจ้ง</option>
+          </select>
+        </label>
+      </div>
+      <label>ความเงียบขั้นต่ำ <output id="quietOut">🤫🤫🤫</output>
+        <input id="quiet" type="range" min="1" max="5" value="3">
+      </label>
+      <div class="chips" id="moods" aria-label="อารมณ์ของเดต"></div>
+      <div class="frow2">
+        <label class="check"><input id="favOnly" type="checkbox"> แสดงเฉพาะที่ถูกใจ ♥</label>
+        <label class="sort">เรียงตาม
+          <select id="sort">
+            <option value="quiet">เงียบที่สุดก่อน</option>
+            <option value="energy">ใช้พลังสังคมน้อยสุด</option>
+            <option value="budget">ประหยัดสุด</option>
+            <option value="name">ชื่อ ก–ฮ</option>
+          </select>
+        </label>
+        <button id="random" class="ghost" type="button">🎲 สุ่มให้หน่อย</button>
+      </div>
+    </div>
+    <p id="resultInfo" class="muted" aria-live="polite"></p>
+    <div id="results" class="cards"></div>
+  </section>
+
+  <!-- วางแผน -->
+  <section id="tab-plan" class="panel" role="tabpanel" hidden>
+    <div class="grid">
+      <div class="card">
+        <h2>✨ สร้างแผนอัตโนมัติ</h2>
+        <p class="muted small">เลือกเงื่อนไข แล้วให้ระบบจัดทริปเงียบ ๆ ให้ (เพิ่มช่วงพักชาร์จแบตให้เอง)</p>
+        <div class="frow">
+          <label>เมือง
+            <select id="aCity"></select>
+          </label>
+          <label>ความยาวทริป
+            <select id="aLen">
+              <option value="half">ครึ่งวัน (~4 ชม.)</option>
+              <option value="full">เต็มวัน (~8 ชม.)</option>
+            </select>
+          </label>
+          <label>งบ
+            <select id="aBudget">
+              <option value="3">ไม่จำกัด</option>
+              <option value="2">฿฿</option>
+              <option value="1">฿</option>
+            </select>
+          </label>
+          <label>แบตสังคมตอนนี้
+            <select id="aBattery">
+              <option value="low">🪫 เหลือน้อย</option>
+              <option value="mid" selected>🔋 กลาง ๆ</option>
+              <option value="high">⚡ เต็ม</option>
+            </select>
+          </label>
+        </div>
+        <button id="autoPlan" class="primary" type="button">จัดแผนให้เลย</button>
+      </div>
+
+      <div class="card">
+        <h2>📝 รายละเอียดทริป</h2>
+        <div class="frow">
+          <label>ชื่อทริป
+            <input id="pTitle" type="text" maxlength="60" placeholder="เดตวันเสาร์ของเรา">
+          </label>
+          <label>วันที่
+            <input id="pDate" type="date">
+          </label>
+          <label>เริ่มกี่โมง
+            <input id="pStart" type="time" value="10:00">
+          </label>
+          <label>เผื่อเวลาเดินทาง (นาที)
+            <input id="pTravel" type="number" min="0" max="180" step="5" value="30">
+          </label>
+        </div>
+        <label>🔐 คำลับ "อยากกลับบ้านแล้ว" <span class="muted small">(ตกลงกันไว้ จะได้ไม่ต้องอธิบายเยอะ)</span>
+          <input id="pSafe" type="text" maxlength="40" placeholder="เช่น “แมวที่บ้านคิดถึงแล้ว”">
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="planhead">
+        <h2>🗺️ ไทม์ไลน์</h2>
+        <div class="btns">
+          <button id="addBreak" type="button" class="ghost">☕ เพิ่มช่วงพัก</button>
+          <button id="copyPlan" type="button" class="ghost">📋 คัดลอก</button>
+          <button id="printPlan" type="button" class="ghost">🖨️ พิมพ์</button>
+          <button id="clearPlan" type="button" class="ghost danger">ล้างแผน</button>
+        </div>
+      </div>
+      <p id="planSummary" class="muted small"></p>
+      <div class="battery" aria-live="polite">
+        <span>แบตสังคมโดยประมาณตอนจบทริป</span>
+        <div class="bbar"><i id="bFill"></i></div>
+        <b id="bText">100%</b>
+      </div>
+      <p id="bNote" class="muted small"></p>
+      <ol id="timeline" class="timeline"></ol>
+      <p id="emptyPlan" class="empty">ยังไม่มีอะไรในแผน — ไปที่แท็บ “ค้นหาที่เที่ยว” แล้วกด <b>+ ใส่แผน</b> หรือใช้ “สร้างแผนอัตโนมัติ” ด้านบน</p>
+    </div>
+  </section>
+
+  <!-- ทริค -->
+  <section id="tab-tips" class="panel" role="tabpanel" hidden>
+    <div class="grid">
+      <div class="card">
+        <h2>⏰ หลบคน หลบเสียง</h2>
+        <ul class="list">
+          <li>ไป <b>วันธรรมดา</b> หรือช่วง <b>เปิดใหม่ ๆ</b> ตอนเช้า คนน้อยกว่าวันหยุดมาก</li>
+          <li>หลีกเลี่ยงวันหยุดยาว ช่วงเงินเดือนออก และช่วงเทศกาล</li>
+          <li>เลือกที่นั่งริมหน้าต่าง/มุมห้อง หันหลังให้ทางเดิน รู้สึกปลอดภัยกว่า</li>
+          <li>พกหูฟังตัดเสียงไว้คนละอัน เผื่อช่วงเดินทาง</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>🔋 ดูแลแบตสังคม</h2>
+        <ul class="list">
+          <li>ใส่ <b>ช่วงพัก 20–30 นาที</b> ทุก 2–3 ชั่วโมง ไม่ต้องคุยก็ได้ แค่นั่งเงียบ ๆ ด้วยกัน</li>
+          <li>เดตแบบ “ทำคนละอย่างแต่อยู่ด้วยกัน” (parallel play) เช่น อ่านหนังสือคนละเล่ม ก็โรแมนติกได้</li>
+          <li>จองล่วงหน้า / สั่งออนไลน์ ลดการต้องคุยกับคนแปลกหน้า</li>
+          <li>มีแผนสำรองที่ “กลับบ้านได้ทันที” ไม่มีใครผิด</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>💬 คุยกันก่อนไป</h2>
+        <ul class="list">
+          <li>บอกระดับแบตตอนนี้เป็นตัวเลข 1–10 เข้าใจตรงกันง่ายกว่า</li>
+          <li>ตกลง <b>คำลับ</b> ไว้ใช้ตอนอยากกลับ (ใส่ไว้ในหน้าแผนได้)</li>
+          <li>แบ่งกันว่าใครคุยกับพนักงาน/ถามทาง ผลัดกันได้</li>
+          <li>หลังทริป ให้เวลาอยู่คนเดียวซักพัก ไม่ใช่สัญญาณว่าไม่รักกัน 💛</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>🏠 เดตที่บ้านก็ดีมาก</h2>
+        <p class="muted small">ไอเดียแบบไม่ต้องออกไปไหน ดูได้ในแท็บค้นหา เลือกเมือง “ที่ไหนก็ได้ / ที่บ้าน”</p>
+        <button id="goHome" type="button">ดูไอเดียเดตที่บ้าน →</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<dialog id="detail">
+  <article id="detailBody"></article>
+  <form method="dialog"><button class="ghost">ปิด</button></form>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<footer class="wrap foot">
+  ข้อมูลสถานที่เป็นค่าประมาณเพื่อช่วยวางแผน ความเงียบ/เวลาเปิดปิดอาจเปลี่ยนแปลง โปรดตรวจสอบก่อนเดินทาง · แผนถูกบันทึกในเบราว์เซอร์ของคุณเท่านั้น
+</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
