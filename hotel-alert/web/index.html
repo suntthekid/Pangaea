@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hotel Alert – โรงแรมราคาถูก พระราม 9 · ห้วยขวาง · รัชโยธิน</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="badge">🏨 Hotel Alert · ระบบตรวจสอบราคา</p>
+    <h1>โรงแรมราคาถูก พระราม 9 · ห้วยขวาง · รัชโยธิน</h1>
+    <p class="sub">โหลดผลค้นหาโรงแรม แล้วกรองตามย่าน ราคา รีวิว และระยะห่างจากถนน ระบบจะไฮไลต์ที่พักใหม่และที่ราคาลดลงจากครั้งก่อน</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card source" aria-labelledby="h-src">
+    <div class="source-row">
+      <h2 id="h-src">ข้อมูล</h2>
+      <p id="srcInfo" class="muted">ยังไม่ได้โหลดข้อมูล</p>
+    </div>
+    <div class="source-actions">
+      <button id="btnSample" type="button">โหลดข้อมูลตัวอย่าง</button>
+      <label class="filebtn">อัปโหลดไฟล์ JSON<input id="file" type="file" accept=".json,application/json" multiple hidden></label>
+      <button id="btnPaste" type="button" class="ghost">วาง JSON</button>
+      <form id="urlForm" class="urlform">
+        <input id="url" type="url" placeholder="หรือใส่ URL ของไฟล์ JSON" aria-label="URL ของไฟล์ JSON">
+        <select id="refresh" aria-label="ดึงข้อมูลใหม่อัตโนมัติ">
+          <option value="0">ไม่ดึงซ้ำ</option>
+          <option value="15">ทุก 15 นาที</option>
+          <option value="60">ทุก 1 ชม.</option>
+          <option value="180">ทุก 3 ชม.</option>
+        </select>
+        <button type="submit">โหลด</button>
+      </form>
+    </div>
+    <div id="pasteBox" hidden>
+      <textarea id="pasteText" rows="5" placeholder='วางผลค้นหา เช่น {"accommodations":[...]} หรือ {"hotels":[...]}'></textarea>
+      <div class="actions"><button id="btnPasteLoad" type="button" class="primary">ใช้ข้อมูลนี้</button></div>
+    </div>
+    <p id="msg" class="msg" role="status" aria-live="polite"></p>
+  </section>
+
+  <div class="layout">
+    <aside class="card filters" aria-labelledby="h-f">
+      <div class="fhead"><h2 id="h-f">ตัวกรอง</h2><button id="btnReset" type="button" class="link">รีเซ็ต</button></div>
+
+      <fieldset>
+        <legend>ย่าน</legend>
+        <div id="zoneBoxes" class="checks"></div>
+      </fieldset>
+
+      <label>ค้นหาชื่อที่พัก
+        <input id="q" type="search" placeholder="เช่น Ratchada, Hostel">
+      </label>
+
+      <label>ราคาสูงสุดต่อคืน: <b id="maxPriceOut"></b>
+        <input id="maxPrice" type="range" min="300" max="3000" step="50">
+      </label>
+      <label>ราคาต่ำสุดต่อคืน: <b id="minPriceOut"></b>
+        <input id="minPrice" type="range" min="0" max="2000" step="50">
+      </label>
+
+      <label>คะแนนรีวิวขั้นต่ำ
+        <select id="minRating">
+          <option value="0">ไม่กำหนด</option>
+          <option value="6">6+</option>
+          <option value="7">7+ ดี</option>
+          <option value="8">8+ ดีมาก</option>
+          <option value="9">9+ ยอดเยี่ยม</option>
+        </select>
+      </label>
+      <label>จำนวนรีวิวขั้นต่ำ
+        <input id="minReviews" type="number" min="0" step="10">
+      </label>
+      <label class="inline"><input id="allowUnrated" type="checkbox"> รวมที่พักที่ยังไม่มีรีวิว</label>
+
+      <label>ห่างจากแนวถนนไม่เกิน: <b id="bufferOut"></b>
+        <input id="buffer" type="range" min="0.2" max="2.5" step="0.1">
+      </label>
+
+      <fieldset>
+        <legend>ประเภทที่พัก</legend>
+        <div id="typeBoxes" class="checks"><span class="muted">โหลดข้อมูลก่อน</span></div>
+      </fieldset>
+
+      <label class="inline"><input id="onlyNew" type="checkbox"> แสดงเฉพาะที่ใหม่/ลดราคา</label>
+
+      <label>เรียงตาม
+        <select id="sort">
+          <option value="price">ราคาถูก → แพง</option>
+          <option value="value">คุ้มค่า (คะแนน ÷ ราคา)</option>
+          <option value="rating">คะแนนรีวิวสูงสุด</option>
+          <option value="distance">ใกล้ถนนที่สุด</option>
+          <option value="zone">ตามย่าน</option>
+        </select>
+      </label>
+    </aside>
+
+    <div class="results">
+      <section class="kpis" aria-label="สรุปผล">
+        <div class="kpi main"><span>ผ่านตัวกรอง</span><b id="kCount">0</b><small id="kTotal">จาก 0 แห่ง</small></div>
+        <div class="kpi"><span>ถูกที่สุด</span><b id="kMin">-</b><small id="kMinName">&nbsp;</small></div>
+        <div class="kpi"><span>ราคาเฉลี่ย</span><b id="kAvg">-</b><small>ต่อคืน</small></div>
+        <div class="kpi hot"><span>ใหม่ / ลดราคา</span><b id="kNew">0</b><small>เทียบกับที่ทำเครื่องหมายไว้</small></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-map">
+        <div class="fhead"><h2 id="h-map">แผนที่แนวถนน</h2><div id="legend" class="legend"></div></div>
+        <svg id="map" viewBox="0 0 600 420" role="img" aria-label="แผนที่ตำแหน่งที่พักเทียบกับแนวถนน"></svg>
+      </section>
+
+      <section class="card" aria-labelledby="h-list">
+        <div class="fhead">
+          <h2 id="h-list">รายการที่พัก</h2>
+          <div class="actions tight">
+            <button id="btnSeen" type="button" title="บันทึกราคาปัจจุบันเป็นฐาน ครั้งหน้าจะแจ้งเฉพาะที่ใหม่หรือราคาลดลง">✔ ทำเครื่องหมายว่าเห็นแล้ว</button>
+            <button id="btnNotify" type="button" class="ghost">🔔 แจ้งเตือนในเบราว์เซอร์</button>
+            <button id="btnCsv" type="button" class="ghost">⬇ CSV</button>
+          </div>
+        </div>
+        <div id="list" class="list"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer class="wrap muted">
+  ราคาเปลี่ยนแปลงตลอดเวลา โปรดตรวจสอบราคาจริงที่หน้าจองก่อนชำระเงิน · ตัวกรองและราคาที่เห็นแล้วเก็บไว้ในเบราว์เซอร์นี้เท่านั้น
+</footer>
+<script src="app.js"></script>
+</body>
+</html>
