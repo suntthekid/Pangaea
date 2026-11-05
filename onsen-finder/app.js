@@ -4,6 +4,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;'
 const baht = n => n.toLocaleString('th-TH');
 const STORE = 'onsen4two.custom';
 
+const saveCustom = () => { try { localStorage.setItem(STORE, JSON.stringify(custom)); } catch {} };
 const loadCustom = () => { try { return JSON.parse(localStorage.getItem(STORE)) || []; } catch { return []; } };
 let custom = loadCustom();
 const allVenues = () => [...VENUES, ...custom];
@@ -154,7 +155,7 @@ $('list').addEventListener('click', e => {
   const id = e.target.dataset.del;
   if (!id) return;
   custom = custom.filter(v => v.id !== id);
-  localStorage.setItem(STORE, JSON.stringify(custom));
+  saveCustom();
   render();
 });
 
@@ -172,7 +173,7 @@ $('addDlg').addEventListener('close', () => {
     privateForTwo: 'yes', features: ['เพิ่มเอง'],
     book: /^https?:\/\//.test(f.book) ? f.book : '',
   });
-  localStorage.setItem(STORE, JSON.stringify(custom));
+  saveCustom();
   render();
 });
 
