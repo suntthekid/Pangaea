@@ -113,3 +113,8 @@ a{color:inherit}
   .section{padding:56px 20px}
   .section.alt{padding:56px 0}
 }
+.price small{display:block;font-weight:400;color:var(--muted);font-size:.78rem}
+.sold{color:#a33;font-weight:600}
+.hotel.soldout{opacity:.7}
+.hotel .foot{flex-wrap:wrap}
+.hotel .foot .price{flex-basis:100%}
