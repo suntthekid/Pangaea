@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>เชียงใหม่ 2 วัน · ทริปพักผ่อนสำหรับสองคน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;700&family=Noto+Sans+Thai:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hero">
+  <nav class="wrap nav">
+    <span class="logo">เชียงใหม่ · สองเรา</span>
+    <div class="links">
+      <a href="#stay">ที่พัก</a>
+      <a href="#plan">แผน 2 วัน</a>
+      <a href="#budget">งบประมาณ</a>
+      <a href="#pack">เตรียมของ</a>
+    </div>
+  </nav>
+  <div class="wrap hero-body">
+    <p class="eyebrow">ทริปพักผ่อน 2 วัน 1 คืน</p>
+    <h1>ช้าลงหน่อย<br>ที่เชียงใหม่ กับคนข้างๆ</h1>
+    <p class="sub">แผนเที่ยวแบบไม่เร่ง เน้นที่พักดีๆ มีอ่างแช่ตัว สปาสำหรับคู่ และวิวที่นั่งดูได้ทั้งเย็น</p>
+    <div class="hero-tags">
+      <span>🛁 อ่างแช่ในห้อง</span><span>💆 สปาคู่</span><span>⛰️ วิวดอย / ทุ่งนา / แม่น้ำ</span>
+    </div>
+    <a class="btn" href="#stay">เลือกที่พักก่อน</a>
+  </div>
+</header>
+
+<main>
+
+<section id="stay" class="wrap section">
+  <h2>ที่พักที่มีอ่าง สปา และวิวสวย</h2>
+  <p class="lead">คัดมาจากโรงแรมที่ขึ้นชื่อเรื่องความเป็นส่วนตัว กรองตามงบหรือสไตล์ที่ชอบได้ กดการ์ดเพื่อใช้ที่พักนั้นในแผนเที่ยว</p>
+
+  <div class="filters" role="group" aria-label="ตัวกรองที่พัก">
+    <button class="chip active" data-filter="all">ทั้งหมด</button>
+    <button class="chip" data-filter="mountain">วิวดอย</button>
+    <button class="chip" data-filter="rice">วิวทุ่งนา</button>
+    <button class="chip" data-filter="river">ริมแม่น้ำ</button>
+    <button class="chip" data-filter="city">ในเมือง</button>
+    <button class="chip" data-filter="pool">มีพูลวิลล่า</button>
+  </div>
+
+  <div id="hotels" class="hotels"></div>
+  <p class="note">* ราคาเป็นช่วงโดยประมาณต่อคืน (บาท) สำหรับห้องที่มีอ่างแช่ ราคาจริงขึ้นกับฤดูกาล ช่วงพ.ย.–ก.พ. เป็นไฮซีซั่น ควรจองล่วงหน้าและเช็กราคาล่าสุดก่อนทุกครั้ง</p>
+</section>
+
+<section id="plan" class="section alt">
+  <div class="wrap">
+    <h2>แผน 2 วัน แบบไม่รีบ</h2>
+    <p class="lead">ที่พักที่เลือก: <strong id="chosen-hotel">ยังไม่ได้เลือก</strong></p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" role="tab" data-day="1">วันที่ 1 · มาถึงแล้วพัก</button>
+      <button class="tab" role="tab" data-day="2">วันที่ 2 · ตื่นสาย กินดี กลับบ้าน</button>
+    </div>
+
+    <ol id="timeline" class="timeline"></ol>
+
+    <div class="tips">
+      <div class="tip"><h3>เวลาที่ดีที่สุด</h3><p>พ.ย.–ก.พ. อากาศเย็น เหมาะแช่อ่างอุ่นๆ ที่สุด ช่วงมี.ค.–เม.ย. อาจมีหมอกควัน ควรเช็กค่าฝุ่นก่อนเดินทาง</p></div>
+      <div class="tip"><h3>การเดินทาง</h3><p>สนามบินเข้าเมืองประมาณ 15–20 นาที เรียก Grab/Bolt สะดวก ถ้าพักแม่ริมหรือหางดง เช่ารถหรือใช้รถรับส่งของโรงแรมจะสบายกว่า</p></div>
+      <div class="tip"><h3>จองสปา</h3><p>สปาคู่ช่วงเย็นเต็มเร็ว จองล่วงหน้าตอนจองห้องเลย บางโรงแรมมีแพ็กเกจห้อง + สปาที่คุ้มกว่า</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="budget" class="wrap section">
+  <h2>คำนวณงบสำหรับสองคน</h2>
+  <div class="budget">
+    <form id="budget-form" class="card">
+      <label>ค่าที่พัก (ต่อคืน)
+        <input id="b-hotel" type="number" min="0" step="500" value="9000">
+      </label>
+      <label>สปาคู่
+        <select id="b-spa">
+          <option value="0">ไม่ทำ</option>
+          <option value="2400">นวดไทย/นวดเท้า ร้านในเมือง (~2,400)</option>
+          <option value="5000" selected>สปาเดย์ 90 นาที สำหรับ 2 คน (~5,000)</option>
+          <option value="9000">สปาโรงแรมหรู 2 ชม. สำหรับ 2 คน (~9,000)</option>
+        </select>
+      </label>
+      <label>สไตล์การกิน
+        <select id="b-food">
+          <option value="1600">สบายๆ ร้านท้องถิ่น (~1,600)</option>
+          <option value="3500" selected>คาเฟ่ + ดินเนอร์ริมน้ำ (~3,500)</option>
+          <option value="7000">ไฟน์ไดนิ่ง 1 มื้อ (~7,000)</option>
+        </select>
+      </label>
+      <label>การเดินทางในเมือง
+        <select id="b-transport">
+          <option value="800">Grab/Bolt (~800)</option>
+          <option value="2200" selected>เช่ารถ 2 วัน + น้ำมัน (~2,200)</option>
+          <option value="3000">รถรับส่งโรงแรม (~3,000)</option>
+        </select>
+      </label>
+      <label>ตั๋วเครื่องบินไป-กลับ (รวม 2 คน)
+        <input id="b-flight" type="number" min="0" step="500" value="5000">
+      </label>
+    </form>
+    <div class="card total">
+      <p>งบรวมโดยประมาณ</p>
+      <p id="b-total" class="big">–</p>
+      <p id="b-each" class="muted">–</p>
+      <ul id="b-break" class="break"></ul>
+    </div>
+  </div>
+</section>
+
+<section id="pack" class="section alt">
+  <div class="wrap">
+    <h2>ของที่ควรเตรียม</h2>
+    <p class="lead">ติ๊กเก็บไว้ได้ ระบบจะจำในเบราว์เซอร์นี้</p>
+    <ul id="checklist" class="checklist"></ul>
+  </div>
+</section>
+
+</main>
+
+<footer class="wrap foot">
+  <p>ข้อมูลที่พัก ร้าน และราคาเป็นแนวทางเบื้องต้น ณ ปลายปี 2026 กรุณาตรวจสอบเวลาเปิด-ปิดและราคาล่าสุดก่อนเดินทาง</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
