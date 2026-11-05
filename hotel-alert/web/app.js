@@ -13,6 +13,7 @@ let DEFAULTS = {
 let DROP_PCT = 5;
 const K_FILTERS = 'hotelalert.filters', K_SEEN = 'hotelalert.seen', K_SRC = 'hotelalert.source';
 
+const EMBED = window.HOTEL_EMBED || null; // ใส่มาโดย build_web.py สำหรับไฟล์เดียวเปิดได้เลย
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const baht = v => '฿' + Math.round(v).toLocaleString('th-TH');
@@ -276,7 +277,13 @@ function exportCsv() {
   const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const lines = lastFiltered.map(r => [r.h.name, r.zone.name, Math.round(r.h.perNight), r.h.rating ?? '', r.h.reviews, r.h.kind,
     r.dist.toFixed(2), r.h.checkin, r.h.checkout, { new: 'ใหม่', drop: 'ลดราคา', seen: '' }[r.st.kind], r.h.url].map(q).join(','));
-  const blob = new Blob(['﻿' + [head.map(q).join(','), ...lines].join('\n')], { type: 'text/csv' });
+  const csv = [head.map(q).join(','), ...lines].join('\n');
+  if (EMBED?.artifact) {
+    navigator.clipboard.writeText(csv).then(() => setMsg(`คัดลอก CSV ${lastFiltered.length} แถวแล้ว วางใน Excel/Google Sheets ได้เลย`),
+      () => setMsg('คัดลอกไม่สำเร็จ', true));
+    return;
+  }
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv' });
   const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'hotels.csv' });
   a.click(); URL.revokeObjectURL(a.href);
 }
@@ -317,7 +324,8 @@ async function loadUrl(url, quiet = false) {
 
 async function loadSample() {
   try {
-    setData(parseSnapshot(await fetchJson('../sample_snapshot.json')), 'ข้อมูลตัวอย่าง (Booking.com 5 พ.ย. 2026)');
+    const data = EMBED?.sample || await fetchJson('../sample_snapshot.json');
+    setData(parseSnapshot(data), EMBED?.sampleLabel || 'ข้อมูลตัวอย่าง (Booking.com 5 พ.ย. 2026)');
     setMsg('');
   } catch {
     setMsg('เปิดไฟล์ตัวอย่างไม่ได้ (เปิดหน้าเว็บผ่าน file:// อยู่) ให้รัน python3 -m http.server ในโฟลเดอร์ hotel-alert หรือกด "อัปโหลดไฟล์ JSON"', true);
@@ -382,9 +390,9 @@ function bind() {
 // ---------------------------------------------------------------- init
 (async function init() {
   // ใช้ย่านและเงื่อนไขจาก config ของระบบแจ้งเตือน ถ้าเปิดผ่านเว็บเซิร์ฟเวอร์
-  for (const path of ['../config.json', '../config.example.json']) {
+  for (const path of EMBED?.config ? [null] : ['../config.json', '../config.example.json']) {
     try {
-      const cfg = await fetchJson(path);
+      const cfg = EMBED?.config || await fetchJson(path);
       ZONES = cfg.zones.map(z => ({ key: z.key, name: z.name, route: z.route }));
       const f = cfg.filters || {};
       DROP_PCT = f.price_drop_pct ?? DROP_PCT;
@@ -404,5 +412,6 @@ function bind() {
   render();
   const src = load(K_SRC, null);
   if (src?.url) { $('url').value = src.url; $('refresh').value = src.refresh || '0'; }
-  if (location.protocol !== 'file:') loadSample();
+  if (EMBED?.artifact) { $('urlForm').hidden = true; $('btnNotify').hidden = true; $('btnCsv').textContent = '⧉ คัดลอก CSV'; }
+  if (EMBED || location.protocol !== 'file:') loadSample();
 })();
