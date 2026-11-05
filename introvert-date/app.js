@@ -271,10 +271,21 @@ $('addBreak').addEventListener('click', () => {
   plan.items.push({ type: 'break', dur: 30, note: '' });
   savePlan(); renderPlan(false); toast('เพิ่มช่วงพักแล้ว — เลื่อนตำแหน่งได้ด้วยปุ่ม ↑↓');
 });
+// ยืนยันด้วยการกดซ้ำ (ไม่ใช้ confirm() เพราะบางที่เปิดเว็บใน frame จะถูกบล็อก)
 $('clearPlan').addEventListener('click', () => {
-  if (!plan.items.length || !confirm('ล้างแผนทั้งหมดเลยไหม?')) return;
-  plan.items = []; savePlan(); renderPlan(false); renderResults();
+  const b = $('clearPlan');
+  if (!plan.items.length) return;
+  if (!b.dataset.armed) {
+    b.dataset.armed = '1'; b.textContent = 'กดอีกครั้งเพื่อยืนยัน';
+    clearTimeout(b.t); b.t = setTimeout(() => { delete b.dataset.armed; b.textContent = 'ล้างแผน'; }, 3000);
+    return;
+  }
+  delete b.dataset.armed; b.textContent = 'ล้างแผน';
+  plan.items = []; savePlan(); renderPlan(false); renderResults(); toast('ล้างแผนแล้ว');
 });
+// การพิมพ์ใช้ไม่ได้เมื่อเปิดใน frame — ซ่อนปุ่มไว้
+let framed = true; try { framed = window.self !== window.top; } catch { /* cross-origin = framed */ }
+if (framed) $('printPlan').hidden = true;
 $('printPlan').addEventListener('click', () => window.print());
 
 function planText() {
@@ -292,7 +303,10 @@ function planText() {
 $('copyPlan').addEventListener('click', async () => {
   if (!plan.items.length) return toast('ยังไม่มีแผนให้คัดลอก');
   try { await navigator.clipboard.writeText(planText()); toast('คัดลอกแผนแล้ว ส่งให้แฟนได้เลย 💌'); }
-  catch { prompt('คัดลอกข้อความนี้', planText()); }
+  catch {
+    $('detailBody').innerHTML = '<h2>📋 คัดลอกแผน</h2><p class="muted small">เลือกข้อความทั้งหมดแล้วคัดลอกเองได้เลย</p><textarea id="planTxt" rows="12" readonly></textarea>';
+    $('planTxt').value = planText(); $('detail').showModal(); $('planTxt').select();
+  }
 });
 
 // จัดแผนอัตโนมัติ
