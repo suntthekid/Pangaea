@@ -1,0 +1,38 @@
+{
+  "_comment": "route = จุดพิกัด [lat, lng] เรียงตามแนวถนน · buffer_km = ระยะห่างจากเส้นถนนที่ยอมรับ",
+  "zones": [
+    {
+      "key": "rama9",
+      "name": "พระราม 9",
+      "route": [[13.7577, 100.5657], [13.7562, 100.5790], [13.7535, 100.5980], [13.7495, 100.6230]],
+      "buffer_km": 1.2,
+      "max_price_per_night": 1000
+    },
+    {
+      "key": "huaikhwang",
+      "name": "ห้วยขวาง–รัชดา",
+      "route": [[13.7577, 100.5657], [13.7660, 100.5700], [13.7787, 100.5737], [13.7895, 100.5740], [13.7985, 100.5738], [13.8060, 100.5728]],
+      "buffer_km": 1.2,
+      "max_price_per_night": 1000
+    },
+    {
+      "key": "ratchayothin",
+      "name": "รัชโยธิน",
+      "route": [[13.8060, 100.5728], [13.8200, 100.5790], [13.8295, 100.5695], [13.8370, 100.5730]],
+      "buffer_km": 1.2,
+      "max_price_per_night": 1000
+    }
+  ],
+  "filters": {
+    "max_price_per_night": 1000,
+    "min_price_per_night": 0,
+    "min_rating": 7.0,
+    "allow_unrated": true,
+    "min_reviews": 0,
+    "price_drop_pct": 5,
+    "exclude_types": ["Capsule", "แคปซูล"]
+  },
+  "notify": {
+    "channels": ["console"]
+  }
+}
