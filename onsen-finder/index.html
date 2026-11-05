@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onsen for Two – หาออนเซ็นส่วนตัวแช่ 2 คน</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="badge">♨️ Onsen for Two</p>
+    <h1>หา Private Onsen &amp; Spa แบบแช่ 2 คน</h1>
+    <p class="sub">ย่านพระราม 9 · ห้วยขวาง · รัชดา · รัชโยธิน</p>
+  </div>
+</header>
+
+<main class="wrap layout">
+  <aside class="card filters" aria-labelledby="h-filter">
+    <h2 id="h-filter">ตัวกรอง</h2>
+
+    <fieldset>
+      <legend>ย่าน</legend>
+      <div id="areas" class="chips"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>งบประมาณ (บาท / 2 คน / รอบ)</legend>
+      <div class="row">
+        <label>ต่ำสุด <input id="pmin" type="number" min="0" step="100" value="0"></label>
+        <label>สูงสุด <input id="pmax" type="number" min="0" step="100" value="6000"></label>
+      </div>
+      <input id="prange" type="range" min="500" max="8000" step="100" value="6000" aria-label="งบสูงสุด">
+      <div id="presets" class="chips small"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>วันและเวลาที่ว่าง</legend>
+      <label>วันที่ <input id="date" type="date"></label>
+      <label>ช่วงเวลา
+        <select id="tod">
+          <option value="any">ทั้งวัน</option>
+          <option value="afternoon">บ่าย (12:00–17:00)</option>
+          <option value="evening">เย็น (17:00–21:00)</option>
+          <option value="night">ดึก (21:00 ขึ้นไป)</option>
+        </select>
+      </label>
+      <label class="check"><input id="onlyFree" type="checkbox" checked> แสดงเฉพาะร้านที่มีรอบว่าง</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>อื่น ๆ</legend>
+      <label class="check"><input id="onlyConfirmed" type="checkbox"> ยืนยันแล้วว่ามีห้องแช่คู่ส่วนตัว</label>
+      <label class="check"><input id="showDemo" type="checkbox" checked> แสดงร้านตัวอย่าง (สมมติ)</label>
+      <label>เรียงตาม
+        <select id="sort">
+          <option value="price">ราคาต่ำ → สูง</option>
+          <option value="priceDesc">ราคาสูง → ต่ำ</option>
+          <option value="free">รอบว่างมากสุด</option>
+        </select>
+      </label>
+    </fieldset>
+    <button id="reset" type="button" class="ghost">ล้างตัวกรอง</button>
+  </aside>
+
+  <section aria-labelledby="h-results">
+    <div class="bar">
+      <h2 id="h-results">ผลการค้นหา <span id="count"></span></h2>
+      <button id="openAdd" type="button">+ เพิ่มร้าน</button>
+    </div>
+    <p class="note">⚠️ ราคาเป็น <b>ค่าประมาณ</b> และ <b>รอบว่างเป็นข้อมูลจำลอง</b> (ร้านยังไม่มี API เปิดให้ดึงข้อมูลจริง) — กดปุ่ม “จอง / เช็กรอบจริง” เพื่อยืนยันกับร้านก่อนไปทุกครั้ง</p>
+    <div id="list" class="list"></div>
+  </section>
+</main>
+
+<dialog id="addDlg">
+  <form id="addForm" method="dialog">
+    <h2>เพิ่มร้านที่คุณรู้จัก</h2>
+    <label>ชื่อร้าน <input name="name" required maxlength="80"></label>
+    <label>ย่าน
+      <select name="area" id="addArea"></select>
+    </label>
+    <label>ใกล้สถานี / ที่อยู่ <input name="near" maxlength="100"></label>
+    <div class="row">
+      <label>ราคาต่ำสุด <input name="priceMin" type="number" min="0" required></label>
+      <label>ราคาสูงสุด <input name="priceMax" type="number" min="0" required></label>
+    </div>
+    <div class="row">
+      <label>เปิด <input name="open" type="time" value="11:00" required></label>
+      <label>ปิด <input name="close" type="time" value="23:00" required></label>
+    </div>
+    <label>ลิงก์จอง <input name="book" type="url" placeholder="https://"></label>
+    <menu>
+      <button value="cancel" formnovalidate class="ghost">ยกเลิก</button>
+      <button value="ok">บันทึก</button>
+    </menu>
+  </form>
+</dialog>
+
+<footer class="wrap foot">ข้อมูลร้านจริงรวบรวมจาก GoWabi / WAUG ณ พ.ย. 2569 · เก็บร้านที่เพิ่มเองไว้ในเบราว์เซอร์นี้เท่านั้น</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
