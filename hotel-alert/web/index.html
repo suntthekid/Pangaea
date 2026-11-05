@@ -52,6 +52,22 @@
         <div id="zoneBoxes" class="checks"></div>
       </fieldset>
 
+      <fieldset>
+        <legend>วันที่เข้าพัก (เช็คอิน)</legend>
+        <div class="two">
+          <label>ตั้งแต่<input id="dFrom" type="date"></label>
+          <label>ถึง<input id="dTo" type="date"></label>
+        </div>
+        <div id="dateBoxes" class="checks"><span class="muted">โหลดข้อมูลก่อน</span></div>
+        <div id="wdBoxes" class="checks wd" aria-label="วันในสัปดาห์"></div>
+        <label class="inline"><input id="groupHotel" type="checkbox"> โรงแรมเดียวกันแสดงเฉพาะวันที่ถูกที่สุด</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>แหล่งข้อมูล</legend>
+        <div id="srcBoxes" class="checks"><span class="muted">โหลดข้อมูลก่อน</span></div>
+      </fieldset>
+
       <label>ค้นหาชื่อที่พัก
         <input id="q" type="search" placeholder="เช่น Ratchada, Hostel">
       </label>
@@ -95,6 +111,7 @@
           <option value="rating">คะแนนรีวิวสูงสุด</option>
           <option value="distance">ใกล้ถนนที่สุด</option>
           <option value="zone">ตามย่าน</option>
+          <option value="date">วันที่เข้าพัก</option>
         </select>
       </label>
     </aside>
@@ -105,6 +122,22 @@
         <div class="kpi"><span>ถูกที่สุด</span><b id="kMin">-</b><small id="kMinName">&nbsp;</small></div>
         <div class="kpi"><span>ราคาเฉลี่ย</span><b id="kAvg">-</b><small>ต่อคืน</small></div>
         <div class="kpi hot"><span>ใหม่ / ลดราคา</span><b id="kNew">0</b><small>เทียบกับที่ทำเครื่องหมายไว้</small></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-trip">
+        <div class="fhead"><h2 id="h-trip">ค้นหาราคาสดบน Trip.com</h2><span class="muted">เปิดหน้า Trip.com ตามย่านและวันที่ที่เลือก</span></div>
+        <form id="tripForm" class="tripform">
+          <label>เช็คอิน<input id="tIn" type="date" required></label>
+          <label>เช็คเอาท์<input id="tOut" type="date" required></label>
+          <label>ผู้ใหญ่<input id="tAdults" type="number" min="1" max="10" value="2"></label>
+          <label>งบไม่เกิน/คืน<input id="tMax" type="number" min="0" step="100" placeholder="ไม่กำหนด"></label>
+        </form>
+        <div id="tripLinks" class="actions"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-dates">
+        <div class="fhead"><h2 id="h-dates">เทียบราคาตามวันที่เข้าพัก</h2><span class="muted">ราคาถูกสุดต่อคืนในแต่ละวัน (ตามตัวกรองอื่น) · กดเพื่อเลือกวันนั้น</span></div>
+        <div id="dateChart" class="dchart"></div>
       </section>
 
       <section class="card" aria-labelledby="h-map">

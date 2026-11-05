@@ -73,6 +73,7 @@ class Hotel:
     kind: str = ""
     checkin: str = ""
     checkout: str = ""
+    source: str = ""
 
     @property
     def per_night(self) -> float:
@@ -131,9 +132,10 @@ def _clean_url(url: str) -> tuple[str, dict]:
 
 def parse_snapshot(data) -> list[Hotel]:
     """รองรับทั้งผลดิบจาก Booking.com ({"accommodations": [...]}) และรูปแบบย่อของเราเอง"""
-    meta_in = meta_out = ""
+    meta_in = meta_out = meta_src = ""
     if isinstance(data, dict):
         meta_in, meta_out = data.get("checkin", ""), data.get("checkout", "")
+        meta_src = data.get("provider", "")
         items = data.get("accommodations") or data.get("hotels") or []
     else:
         items = data
@@ -167,6 +169,7 @@ def parse_snapshot(data) -> list[Hotel]:
             kind=it.get("accommodationType", it.get("type", "")),
             checkin=checkin,
             checkout=checkout,
+            source=it.get("source") or meta_src or ("Booking.com" if "booking.com" in url else ""),
         ))
     return hotels
 
@@ -210,6 +213,16 @@ def passes_filters(h: Hotel, zone: Zone, f: dict) -> bool:
             return False
     if h.reviews < f.get("min_reviews", 0) and h.rating is not None:
         return False
+    if h.checkin:
+        if f.get("checkin_from") and h.checkin < f["checkin_from"]:
+            return False
+        if f.get("checkin_to") and h.checkin > f["checkin_to"]:
+            return False
+        wd = f.get("checkin_weekdays")  # 0=จันทร์ … 6=อาทิตย์
+        if wd and date.fromisoformat(h.checkin).weekday() not in wd:
+            return False
+    if f.get("sources") and h.source not in f["sources"]:
+        return False
     kinds = f.get("exclude_types", [])
     return not any(k.lower() in h.kind.lower() for k in kinds)
 
@@ -243,6 +256,17 @@ def save_state(path: Path, state: dict, deals: list[Deal]) -> None:
 
 
 # ---------------------------------------------------------------- formatting
+TRIPCOM_URL = ("https://th.trip.com/hotels/list?city=359&checkin={checkin}&checkout={checkout}"
+               "&adult=2&crn=1&searchWord={q}")
+
+
+def tripcom_link(h: "Hotel", template: str = TRIPCOM_URL) -> str:
+    """ลิงก์ค้นหาโรงแรมนี้บน Trip.com ตามวันที่เข้าพัก (Trip.com ไม่มี API สาธารณะ จึงเป็นลิงก์ค้นหา)"""
+    fmt = lambda d: d.replace("-", "/")
+    return template.format(checkin=fmt(h.checkin), checkout=fmt(h.checkout), q=urllib.parse.quote(h.name))
+
+
+TH_DAYS = "จ. อ. พ. พฤ. ศ. ส. อา.".split()
 TH_MONTHS = "ม.ค. ก.พ. มี.ค. เม.ย. พ.ค. มิ.ย. ก.ค. ส.ค. ก.ย. ต.ค. พ.ย. ธ.ค.".split()
 
 
@@ -251,7 +275,7 @@ def th_date(iso: str) -> str:
         d = date.fromisoformat(iso)
     except (TypeError, ValueError):
         return iso or "-"
-    return f"{d.day} {TH_MONTHS[d.month - 1]}"
+    return f"{TH_DAYS[d.weekday()]} {d.day} {TH_MONTHS[d.month - 1]}"
 
 
 def money(v: float, cur: str = "THB") -> str:
@@ -269,7 +293,9 @@ def format_deal(d: Deal) -> str:
         f"   {rating} · เข้าพัก {th_date(h.checkin)}–{th_date(h.checkout)}",
     ]
     if h.url:
-        lines.append(f"   🔗 {h.url}")
+        lines.append(f"   🔗 {h.source or 'จอง'}: {h.url}")
+    if h.checkin and h.source != "Trip.com":
+        lines.append(f"   🔎 เทียบราคา Trip.com: {tripcom_link(h)}")
     return "\n".join(lines)
 
 

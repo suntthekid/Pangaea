@@ -80,6 +80,25 @@ button.link{border:0;padding:0;color:var(--pri);text-decoration:underline}
 .muted{color:var(--muted);font-size:.85rem}
 footer{padding:8px 16px 32px}
 @media (max-width:900px){.layout{grid-template-columns:1fr}.filters{position:static}.kpis{grid-template-columns:1fr 1fr}}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.two label{margin-bottom:8px}
+.checks.wd{margin:8px 0}.checks.wd .chip{padding:2px 9px}
+.chip small{color:var(--muted);font-size:.75rem}
+.tripform{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.tripform label{margin:0}
+a.btn{display:inline-block;text-decoration:none;border:1px solid var(--pri);color:var(--pri);border-radius:8px;padding:6px 12px;font-size:.9rem}
+a.btn:hover{background:color-mix(in srgb,var(--pri) 10%,transparent)}
+a.btn.trip{border-color:#287dfa;color:#287dfa}
+.dchart{display:grid;gap:6px}
+.drow{display:grid;grid-template-columns:120px 1fr 150px;gap:10px;align-items:center;font-size:.88rem;cursor:pointer;border:0;background:none;padding:4px 6px;border-radius:8px;color:var(--ink);text-align:left;width:100%}
+.drow:hover,.drow.on{background:color-mix(in srgb,var(--pri) 10%,transparent)}
+.drow .bar{height:14px;background:var(--line);border-radius:7px;overflow:hidden}
+.drow .bar i{display:block;height:100%;background:var(--pri);border-radius:7px}
+.drow.best .bar i{background:var(--ok)}
+.drow .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.links{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.links a{font-size:.8rem;text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:1px 10px;color:var(--pri)}
+.links a.trip{color:#287dfa;border-color:#287dfa55}
+.src{font-size:.72rem;border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--muted)}
+@media (max-width:700px){.tripform{grid-template-columns:1fr 1fr}.drow{grid-template-columns:90px 1fr 110px}}
 </style>
 </head>
 <body>
@@ -128,6 +147,22 @@ footer{padding:8px 16px 32px}
         <div id="zoneBoxes" class="checks"></div>
       </fieldset>
 
+      <fieldset>
+        <legend>วันที่เข้าพัก (เช็คอิน)</legend>
+        <div class="two">
+          <label>ตั้งแต่<input id="dFrom" type="date"></label>
+          <label>ถึง<input id="dTo" type="date"></label>
+        </div>
+        <div id="dateBoxes" class="checks"><span class="muted">โหลดข้อมูลก่อน</span></div>
+        <div id="wdBoxes" class="checks wd" aria-label="วันในสัปดาห์"></div>
+        <label class="inline"><input id="groupHotel" type="checkbox"> โรงแรมเดียวกันแสดงเฉพาะวันที่ถูกที่สุด</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>แหล่งข้อมูล</legend>
+        <div id="srcBoxes" class="checks"><span class="muted">โหลดข้อมูลก่อน</span></div>
+      </fieldset>
+
       <label>ค้นหาชื่อที่พัก
         <input id="q" type="search" placeholder="เช่น Ratchada, Hostel">
       </label>
@@ -171,6 +206,7 @@ footer{padding:8px 16px 32px}
           <option value="rating">คะแนนรีวิวสูงสุด</option>
           <option value="distance">ใกล้ถนนที่สุด</option>
           <option value="zone">ตามย่าน</option>
+          <option value="date">วันที่เข้าพัก</option>
         </select>
       </label>
     </aside>
@@ -181,6 +217,22 @@ footer{padding:8px 16px 32px}
         <div class="kpi"><span>ถูกที่สุด</span><b id="kMin">-</b><small id="kMinName">&nbsp;</small></div>
         <div class="kpi"><span>ราคาเฉลี่ย</span><b id="kAvg">-</b><small>ต่อคืน</small></div>
         <div class="kpi hot"><span>ใหม่ / ลดราคา</span><b id="kNew">0</b><small>เทียบกับที่ทำเครื่องหมายไว้</small></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-trip">
+        <div class="fhead"><h2 id="h-trip">ค้นหาราคาสดบน Trip.com</h2><span class="muted">เปิดหน้า Trip.com ตามย่านและวันที่ที่เลือก</span></div>
+        <form id="tripForm" class="tripform">
+          <label>เช็คอิน<input id="tIn" type="date" required></label>
+          <label>เช็คเอาท์<input id="tOut" type="date" required></label>
+          <label>ผู้ใหญ่<input id="tAdults" type="number" min="1" max="10" value="2"></label>
+          <label>งบไม่เกิน/คืน<input id="tMax" type="number" min="0" step="100" placeholder="ไม่กำหนด"></label>
+        </form>
+        <div id="tripLinks" class="actions"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-dates">
+        <div class="fhead"><h2 id="h-dates">เทียบราคาตามวันที่เข้าพัก</h2><span class="muted">ราคาถูกสุดต่อคืนในแต่ละวัน (ตามตัวกรองอื่น) · กดเพื่อเลือกวันนั้น</span></div>
+        <div id="dateChart" class="dchart"></div>
       </section>
 
       <section class="card" aria-labelledby="h-map">
@@ -206,7 +258,7 @@ footer{padding:8px 16px 32px}
 <footer class="wrap muted">
   ราคาเปลี่ยนแปลงตลอดเวลา โปรดตรวจสอบราคาจริงที่หน้าจองก่อนชำระเงิน · ตัวกรองและราคาที่เห็นแล้วเก็บไว้ในเบราว์เซอร์นี้เท่านั้น
 </footer>
-<script>window.HOTEL_EMBED={"config":{"_comment":"route = จุดพิกัด [lat, lng] เรียงตามแนวถนน · buffer_km = ระยะห่างจากเส้นถนนที่ยอมรับ","zones":[{"key":"rama9","name":"พระราม 9","route":[[13.7577,100.5657],[13.7562,100.579],[13.7535,100.598],[13.7495,100.623]],"buffer_km":1.2,"max_price_per_night":1000},{"key":"huaikhwang","name":"ห้วยขวาง–รัชดา","route":[[13.7577,100.5657],[13.766,100.57],[13.7787,100.5737],[13.7895,100.574],[13.7985,100.5738],[13.806,100.5728]],"buffer_km":1.2,"max_price_per_night":1000},{"key":"ratchayothin","name":"รัชโยธิน","route":[[13.806,100.5728],[13.82,100.579],[13.8295,100.5695],[13.837,100.573]],"buffer_km":1.2,"max_price_per_night":1000}],"filters":{"max_price_per_night":1000,"min_price_per_night":0,"min_rating":7.0,"allow_unrated":true,"min_reviews":0,"price_drop_pct":5,"exclude_types":["Capsule","แคปซูล"]},"notify":{"channels":["console"]}},"sample":{"source":"ข้อมูลตัวอย่าง Booking.com (ค้นเมื่อ 5 พ.ย. 2026, ผู้ใหญ่ 2 คน 1 ห้อง)","checkin":"2026-11-06","checkout":"2026-11-07","hotels":[{"id":14618808,"name":"Luck Hotel Huai Khwang MRT Ratchada","price":1008.81,"currency":"THB","review_score":7,"reviews":63,"stars":3,"type":"Hotel","lat":13.777271,"lng":100.57292,"url":"https://www.booking.com/hotel/th/my-inn-huai-khwang-mrt-ratchada.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":2233167,"name":"City Residence","price":790,"currency":"THB","review_score":7.5,"reviews":511,"stars":3,"type":"Serviced apartment","lat":13.797182,"lng":100.572335,"url":"https://www.booking.com/hotel/th/city-residence.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":10645424,"name":"OYO 75446 Travis Inthamara 49","price":1018.99,"currency":"THB","review_score":8,"reviews":183,"stars":2,"type":"Hotel","lat":13.784855,"lng":100.56857,"url":"https://www.booking.com/hotel/th/oyo-75446-travis-inthamara-49.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":12005368,"name":"Homies Ratchada Hotel","price":1000,"currency":"THB","review_score":9.3,"reviews":45,"stars":3,"type":"Hotel","lat":13.789516,"lng":100.577306,"url":"https://www.booking.com/hotel/th/homies-ratchada-bangkok.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13259020,"name":"Kiwi Capsule Hotel","price":424,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Capsule hotel","lat":13.744624,"lng":100.556447,"url":"https://www.booking.com/hotel/th/kiwi-capsule.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":1162718,"name":"Double DD House at MRT Sutthisarn","price":990,"currency":"THB","review_score":8.2,"reviews":234,"stars":3,"type":"Hostel","lat":13.788374,"lng":100.574913,"url":"https://www.booking.com/hotel/th/double-dd-house.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":4388424,"name":"R9 Bangkok","price":1000,"currency":"THB","review_score":7.8,"reviews":281,"stars":3,"type":"Guest house","lat":13.756743,"lng":100.562283,"url":"https://www.booking.com/hotel/th/r9-bangkok.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":1467349,"name":"Townhouse Siam Privi Hotel","price":823,"currency":"THB","review_score":7.3,"reviews":105,"stars":3,"type":"Hotel","lat":13.773561,"lng":100.581296,"url":"https://www.booking.com/hotel/th/siam-privi-residence.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":673995,"name":"Suda Palace","price":1000,"currency":"THB","review_score":7.4,"reviews":105,"stars":3,"type":"Hotel","lat":13.789171,"lng":100.550938,"url":"https://www.booking.com/hotel/th/suda-palace.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":9788132,"name":"J PLACE HOTEL","price":974,"currency":"THB","review_score":8.7,"reviews":239,"stars":3,"type":"Hotel","lat":13.806285,"lng":100.581042,"url":"https://www.booking.com/hotel/th/j-place.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13273745,"name":"Nature Boutique Hotel Ratchayothin","price":893.75,"currency":"THB","review_score":8.2,"reviews":797,"stars":3,"type":"Hotel","lat":13.832156,"lng":100.559421,"url":"https://www.booking.com/hotel/th/nature-boutique-ratchayothin.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":4255728,"name":"Casaluxe Hotel Ratchada","price":919.49,"currency":"THB","review_score":8.5,"reviews":197,"stars":3,"type":"Hotel","lat":13.820235,"lng":100.583442,"url":"https://www.booking.com/hotel/th/casa-luxe-and-resident.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13151077,"name":"811-STP Homely room Free Wi-Fi and Near BTS Line","price":561.6,"currency":"THB","review_score":7.5,"reviews":16,"stars":3,"type":"Apartment","lat":13.838875,"lng":100.571915,"url":"https://www.booking.com/hotel/th/811-stp-homely-room-free-wi-fi-and-near-bts-line.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":7504276,"name":"Metro Hotel Ratchada 36","price":980.44,"currency":"THB","review_score":8.1,"reviews":30,"stars":3,"type":"Hotel","lat":13.822144,"lng":100.576902,"url":"https://www.booking.com/hotel/th/metro-ratchada-36.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13556282,"name":"202-STP Homely room Free Wi-Fi and Near BTS","price":666.9,"currency":"THB","review_score":9.1,"reviews":10,"stars":3,"type":"Apartment","lat":13.838911,"lng":100.572282,"url":"https://www.booking.com/hotel/th/202-stp-homely-room-free-wi-fi-and-near-bts.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":5369448,"name":"N11Hotel","price":760,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Hotel","lat":13.829337,"lng":100.57087,"url":"https://www.booking.com/hotel/th/n11hotel.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":1503752,"name":"Livotel Hotel Kaset Nawamin Bangkok","price":1034,"currency":"THB","review_score":7.5,"reviews":508,"stars":4,"type":"Hotel","lat":13.839643,"lng":100.582514,"url":"https://www.booking.com/hotel/th/livotelhotel-kaset-nawamin.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":2256209,"name":"Rabbit Room","price":890,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Guest house","lat":13.833163,"lng":100.571634,"url":"https://www.booking.com/hotel/th/rabbit-room.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":498188,"name":"Kaset Guesthouse","price":720,"currency":"THB","review_score":7,"reviews":36,"stars":1,"type":"Guest house","lat":13.837494,"lng":100.573814,"url":"https://www.booking.com/hotel/th/kaset-guesthouse.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":10004237,"name":"Smile Residence at Kaset-Sena","price":990,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Aparthotel","lat":13.832484,"lng":100.573528,"url":"https://www.booking.com/hotel/th/smile-residence-krungethphmhaankhr.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":17560144,"name":"Casa Sukhumvit 39","price":546.59,"currency":"THB","review_score":10,"reviews":3,"stars":3,"type":"Apartment","lat":13.736759,"lng":100.5701,"url":"https://www.booking.com/hotel/th/casa-empo-39.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":16899586,"name":"Witz Pop Ratchada","price":1056,"currency":"THB","review_score":10,"reviews":6,"stars":4,"type":"Hotel","lat":13.772373,"lng":100.571536,"url":"https://www.booking.com/hotel/th/witz-pop-ratchada.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13343278,"name":"Golden Mango home hotel","price":1001.95,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Guest house","lat":13.766826,"lng":100.570126,"url":"https://www.booking.com/hotel/th/jin-mang-guo-zhi-jia.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":16171570,"name":"REHome","price":964.8,"currency":"THB","review_score":8.4,"reviews":20,"stars":3,"type":"Apartment","lat":13.756594,"lng":100.564278,"url":"https://www.booking.com/hotel/th/rehome.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":796797,"name":"3Howw Hostel @ Sukhumvit 21","price":900,"currency":"THB","review_score":7.6,"reviews":237,"stars":2,"type":"Hostel","lat":13.740388,"lng":100.562327,"url":"https://www.booking.com/hotel/th/3howwhostel-sukhumvit21.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":12026585,"name":"First Villa Life Hostel","price":632,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Hostel","lat":13.761865,"lng":100.565625,"url":"https://www.booking.com/hotel/th/efirs-willaa-ailf-a-a-a-tma1a-a.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"}]},"sampleLabel":"ข้อมูลตัวอย่าง Booking.com (ค้นเมื่อ 5 พ.ย. 2026, ผู้ใหญ่ 2 คน 1 ห้อง)","artifact":false};</script>
+<script>window.HOTEL_EMBED={"config":{"_comment":"route = จุดพิกัด [lat, lng] เรียงตามแนวถนน · buffer_km = ระยะห่างจากเส้นถนนที่ยอมรับ","zones":[{"key":"rama9","name":"พระราม 9","route":[[13.7577,100.5657],[13.7562,100.579],[13.7535,100.598],[13.7495,100.623]],"buffer_km":1.2,"max_price_per_night":1000},{"key":"huaikhwang","name":"ห้วยขวาง–รัชดา","route":[[13.7577,100.5657],[13.766,100.57],[13.7787,100.5737],[13.7895,100.574],[13.7985,100.5738],[13.806,100.5728]],"buffer_km":1.2,"max_price_per_night":1000},{"key":"ratchayothin","name":"รัชโยธิน","route":[[13.806,100.5728],[13.82,100.579],[13.8295,100.5695],[13.837,100.573]],"buffer_km":1.2,"max_price_per_night":1000}],"filters":{"max_price_per_night":1000,"min_price_per_night":0,"min_rating":7.0,"allow_unrated":true,"min_reviews":0,"price_drop_pct":5,"exclude_types":["Capsule","แคปซูล"],"checkin_from":"","checkin_to":"","checkin_weekdays":[],"sources":[]},"notify":{"channels":["console"]},"_comment_filters":"checkin_from/checkin_to = ช่วงวันเช็คอิน (YYYY-MM-DD) · checkin_weekdays = วันในสัปดาห์ 0=จ. … 4=ศ. 5=ส. 6=อา. · sources = เช่น [\"Booking.com\", \"Trip.com\"] ว่าง = ทุกแหล่ง","links":{"tripcom":"https://th.trip.com/hotels/list?city=359&checkin={checkin}&checkout={checkout}&adult={adults}&crn=1&searchWord={q}"}},"sample":{"source":"ข้อมูลตัวอย่าง Booking.com (ค้นเมื่อ 5 พ.ย. 2026, ผู้ใหญ่ 2 คน 1 ห้อง, 3 วันเข้าพัก)","hotels":[{"id":14618808,"name":"Luck Hotel Huai Khwang MRT Ratchada","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":1008.81,"currency":"THB","review_score":7,"reviews":63,"stars":3,"type":"Hotel","lat":13.777271,"lng":100.57292,"url":"https://www.booking.com/hotel/th/my-inn-huai-khwang-mrt-ratchada.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":2233167,"name":"City Residence","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":790,"currency":"THB","review_score":7.5,"reviews":511,"stars":3,"type":"Aparthotel","lat":13.797182,"lng":100.572335,"url":"https://www.booking.com/hotel/th/city-residence.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":10645424,"name":"OYO 75446 Travis Inthamara 49","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":1018.99,"currency":"THB","review_score":8,"reviews":183,"stars":2,"type":"Hotel","lat":13.784855,"lng":100.56857,"url":"https://www.booking.com/hotel/th/oyo-75446-travis-inthamara-49.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":12005368,"name":"Homies Ratchada Hotel","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":1000,"currency":"THB","review_score":9.3,"reviews":45,"stars":3,"type":"Hotel","lat":13.789516,"lng":100.577306,"url":"https://www.booking.com/hotel/th/homies-ratchada-bangkok.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13259020,"name":"Kiwi Capsule Hotel","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":424,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Capsule hotel","lat":13.744624,"lng":100.556447,"url":"https://www.booking.com/hotel/th/kiwi-capsule.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":1162718,"name":"Double DD House at MRT Sutthisarn","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":990,"currency":"THB","review_score":8.2,"reviews":234,"stars":3,"type":"Hostel","lat":13.788374,"lng":100.574913,"url":"https://www.booking.com/hotel/th/double-dd-house.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":4388424,"name":"R9 Bangkok","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":1000,"currency":"THB","review_score":7.8,"reviews":281,"stars":3,"type":"Guest house","lat":13.756743,"lng":100.562283,"url":"https://www.booking.com/hotel/th/r9-bangkok.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":1467349,"name":"Townhouse Siam Privi Hotel","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":823,"currency":"THB","review_score":7.3,"reviews":105,"stars":3,"type":"Hotel","lat":13.773561,"lng":100.581296,"url":"https://www.booking.com/hotel/th/siam-privi-residence.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":673995,"name":"Suda Palace","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":1000,"currency":"THB","review_score":7.4,"reviews":105,"stars":3,"type":"Hotel","lat":13.789171,"lng":100.550938,"url":"https://www.booking.com/hotel/th/suda-palace.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":9788132,"name":"J PLACE HOTEL","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":974,"currency":"THB","review_score":8.7,"reviews":239,"stars":3,"type":"Hotel","lat":13.806285,"lng":100.581042,"url":"https://www.booking.com/hotel/th/j-place.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13273745,"name":"Nature Boutique Hotel Ratchayothin","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":893.75,"currency":"THB","review_score":8.2,"reviews":797,"stars":3,"type":"Hotel","lat":13.832156,"lng":100.559421,"url":"https://www.booking.com/hotel/th/nature-boutique-ratchayothin.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":4255728,"name":"Casaluxe Hotel Ratchada","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":919.49,"currency":"THB","review_score":8.5,"reviews":197,"stars":3,"type":"Hotel","lat":13.820235,"lng":100.583442,"url":"https://www.booking.com/hotel/th/casa-luxe-and-resident.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13151077,"name":"811-STP Homely room Free Wi-Fi and Near BTS Line","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":561.6,"currency":"THB","review_score":7.5,"reviews":16,"stars":3,"type":"Apartment","lat":13.838875,"lng":100.571915,"url":"https://www.booking.com/hotel/th/811-stp-homely-room-free-wi-fi-and-near-bts-line.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":7504276,"name":"Metro Hotel Ratchada 36","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":980.44,"currency":"THB","review_score":8.1,"reviews":30,"stars":3,"type":"Hotel","lat":13.822144,"lng":100.576902,"url":"https://www.booking.com/hotel/th/metro-ratchada-36.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13556282,"name":"202-STP Homely room Free Wi-Fi and Near BTS","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":666.9,"currency":"THB","review_score":9.1,"reviews":10,"stars":3,"type":"Apartment","lat":13.838911,"lng":100.572282,"url":"https://www.booking.com/hotel/th/202-stp-homely-room-free-wi-fi-and-near-bts.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":5369448,"name":"N11Hotel","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":760,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Hotel","lat":13.829337,"lng":100.57087,"url":"https://www.booking.com/hotel/th/n11hotel.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":1503752,"name":"Livotel Hotel Kaset Nawamin Bangkok","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":1034,"currency":"THB","review_score":7.5,"reviews":508,"stars":4,"type":"Hotel","lat":13.839643,"lng":100.582514,"url":"https://www.booking.com/hotel/th/livotelhotel-kaset-nawamin.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":2256209,"name":"Rabbit Room","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":890,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Guest house","lat":13.833163,"lng":100.571634,"url":"https://www.booking.com/hotel/th/rabbit-room.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":498188,"name":"Kaset Guesthouse","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":720,"currency":"THB","review_score":7,"reviews":36,"stars":1,"type":"Guest house","lat":13.837494,"lng":100.573814,"url":"https://www.booking.com/hotel/th/kaset-guesthouse.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":10004237,"name":"Smile Residence at Kaset-Sena","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":990,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Aparthotel","lat":13.832484,"lng":100.573528,"url":"https://www.booking.com/hotel/th/smile-residence-krungethphmhaankhr.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":17560144,"name":"Casa Sukhumvit 39","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":546.59,"currency":"THB","review_score":10,"reviews":3,"stars":3,"type":"Apartment","lat":13.736759,"lng":100.5701,"url":"https://www.booking.com/hotel/th/casa-empo-39.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":16899586,"name":"Witz Pop Ratchada","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":1056,"currency":"THB","review_score":10,"reviews":6,"stars":4,"type":"Hotel","lat":13.772373,"lng":100.571536,"url":"https://www.booking.com/hotel/th/witz-pop-ratchada.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13343278,"name":"Golden Mango home hotel","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":1001.95,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Guest house","lat":13.766826,"lng":100.570126,"url":"https://www.booking.com/hotel/th/jin-mang-guo-zhi-jia.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":16171570,"name":"REHome","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":964.8,"currency":"THB","review_score":8.4,"reviews":20,"stars":3,"type":"Apartment","lat":13.756594,"lng":100.564278,"url":"https://www.booking.com/hotel/th/rehome.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":796797,"name":"3Howw Hostel @ Sukhumvit 21","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":900,"currency":"THB","review_score":7.6,"reviews":237,"stars":2,"type":"Hostel","lat":13.740388,"lng":100.562327,"url":"https://www.booking.com/hotel/th/3howwhostel-sukhumvit21.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":12026585,"name":"First Villa Life Hostel","source":"Booking.com","checkin":"2026-11-06","checkout":"2026-11-07","price":632,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Hostel","lat":13.761865,"lng":100.565625,"url":"https://www.booking.com/hotel/th/efirs-willaa-ailf-a-a-a-tma1a-a.html?checkin=2026-11-06&checkout=2026-11-07&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":14618808,"name":"Luck Hotel Huai Khwang MRT Ratchada","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":1008.81,"currency":"THB","review_score":7,"reviews":63,"stars":3,"type":"Hotel","lat":13.777271,"lng":100.57292,"url":"https://www.booking.com/hotel/th/my-inn-huai-khwang-mrt-ratchada.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":10645424,"name":"OYO 75446 Travis Inthamara 49","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":953.47,"currency":"THB","review_score":8,"reviews":183,"stars":2,"type":"Hotel","lat":13.784855,"lng":100.56857,"url":"https://www.booking.com/hotel/th/oyo-75446-travis-inthamara-49.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":2233167,"name":"City Residence","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":790,"currency":"THB","review_score":7.5,"reviews":511,"stars":3,"type":"Aparthotel","lat":13.797182,"lng":100.572335,"url":"https://www.booking.com/hotel/th/city-residence.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":12005368,"name":"Homies Ratchada Hotel","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":1000,"currency":"THB","review_score":9.3,"reviews":45,"stars":3,"type":"Hotel","lat":13.789516,"lng":100.577306,"url":"https://www.booking.com/hotel/th/homies-ratchada-bangkok.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":1162718,"name":"Double DD House at MRT Sutthisarn","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":990,"currency":"THB","review_score":8.2,"reviews":234,"stars":3,"type":"Hostel","lat":13.788374,"lng":100.574913,"url":"https://www.booking.com/hotel/th/double-dd-house.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":4388424,"name":"R9 Bangkok","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":1000,"currency":"THB","review_score":7.8,"reviews":281,"stars":3,"type":"Guest house","lat":13.756743,"lng":100.562283,"url":"https://www.booking.com/hotel/th/r9-bangkok.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":16899586,"name":"Witz Pop Ratchada","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":1056,"currency":"THB","review_score":10,"reviews":6,"stars":4,"type":"Hotel","lat":13.772373,"lng":100.571536,"url":"https://www.booking.com/hotel/th/witz-pop-ratchada.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":335282,"name":"Nice Palace Hotel","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":753.3,"currency":"THB","review_score":7,"reviews":227,"stars":2,"type":"Guest house","lat":13.789827,"lng":100.551904,"url":"https://www.booking.com/hotel/th/nice-palace.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":4164098,"name":"Hotel Paraiso","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":771.32,"currency":"THB","review_score":8.2,"reviews":623,"stars":3,"type":"Apartment","lat":13.780786,"lng":100.572714,"url":"https://www.booking.com/hotel/th/paradise-apartment-krungethphmhaankhr.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":1467349,"name":"Townhouse Siam Privi Hotel","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":967,"currency":"THB","review_score":7.3,"reviews":105,"stars":3,"type":"Hotel","lat":13.773561,"lng":100.581296,"url":"https://www.booking.com/hotel/th/siam-privi-residence.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":4255728,"name":"Casaluxe Hotel Ratchada","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":952.64,"currency":"THB","review_score":8.5,"reviews":197,"stars":3,"type":"Hotel","lat":13.820235,"lng":100.583442,"url":"https://www.booking.com/hotel/th/casa-luxe-and-resident.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13151077,"name":"811-STP Homely room Free Wi-Fi and Near BTS Line","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":561.6,"currency":"THB","review_score":7.5,"reviews":16,"stars":3,"type":"Apartment","lat":13.838875,"lng":100.571915,"url":"https://www.booking.com/hotel/th/811-stp-homely-room-free-wi-fi-and-near-bts-line.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":7504276,"name":"Metro Hotel Ratchada 36","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":1003.49,"currency":"THB","review_score":8.1,"reviews":30,"stars":3,"type":"Hotel","lat":13.822144,"lng":100.576902,"url":"https://www.booking.com/hotel/th/metro-ratchada-36.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13556282,"name":"202-STP Homely room Free Wi-Fi and Near BTS","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":666.9,"currency":"THB","review_score":9.1,"reviews":10,"stars":3,"type":"Apartment","lat":13.838911,"lng":100.572282,"url":"https://www.booking.com/hotel/th/202-stp-homely-room-free-wi-fi-and-near-bts.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":505293,"name":"Cinnamon Hotel Bangkok","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":623.22,"currency":"THB","review_score":8,"reviews":340,"stars":5,"type":"Hotel","lat":13.840784,"lng":100.562284,"url":"https://www.booking.com/hotel/th/cinnamon-residence.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":5369448,"name":"N11Hotel","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":760,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Hotel","lat":13.829337,"lng":100.57087,"url":"https://www.booking.com/hotel/th/n11hotel.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":1503752,"name":"Livotel Hotel Kaset Nawamin Bangkok","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":1034,"currency":"THB","review_score":7.5,"reviews":508,"stars":4,"type":"Hotel","lat":13.839643,"lng":100.582514,"url":"https://www.booking.com/hotel/th/livotelhotel-kaset-nawamin.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":498188,"name":"Kaset Guesthouse","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":720,"currency":"THB","review_score":7,"reviews":36,"stars":1,"type":"Guest house","lat":13.837494,"lng":100.573814,"url":"https://www.booking.com/hotel/th/kaset-guesthouse.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":10004237,"name":"Smile Residence at Kaset-Sena","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":990,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Aparthotel","lat":13.832484,"lng":100.573528,"url":"https://www.booking.com/hotel/th/smile-residence-krungethphmhaankhr.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":14251915,"name":"Studio Botanica I 2 mins to SRT","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":983.25,"currency":"THB","review_score":9.6,"reviews":41,"stars":3,"type":"Apartment","lat":13.841219,"lng":100.560261,"url":"https://www.booking.com/hotel/th/studio-botanica-i-2-mins-to-srt.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13259020,"name":"Kiwi Capsule Hotel","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":424,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Capsule hotel","lat":13.744624,"lng":100.556447,"url":"https://www.booking.com/hotel/th/kiwi-capsule.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":15052926,"name":"Tiger Homestay","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":985.32,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Homestay","lat":13.746693,"lng":100.558769,"url":"https://www.booking.com/hotel/th/tiger-homestay.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":17560144,"name":"Casa Sukhumvit 39","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":546.59,"currency":"THB","review_score":10,"reviews":3,"stars":3,"type":"Apartment","lat":13.736759,"lng":100.5701,"url":"https://www.booking.com/hotel/th/casa-empo-39.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":796797,"name":"3Howw Hostel @ Sukhumvit 21","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":900,"currency":"THB","review_score":7.6,"reviews":237,"stars":2,"type":"Hostel","lat":13.740388,"lng":100.562327,"url":"https://www.booking.com/hotel/th/3howwhostel-sukhumvit21.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":9194500,"name":"Sukhothai Hotel and Residence Ratchada","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":945,"currency":"THB","review_score":7.1,"reviews":8,"stars":2,"type":"Hotel","lat":13.773042,"lng":100.573313,"url":"https://www.booking.com/hotel/th/sukhothai-and-residence.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":10631209,"name":"D Night Suite Hotel","source":"Booking.com","checkin":"2026-11-07","checkout":"2026-11-08","price":990,"currency":"THB","review_score":7.8,"reviews":54,"stars":3,"type":"Hotel","lat":13.770262,"lng":100.580362,"url":"https://www.booking.com/hotel/th/d-night-suite.html?checkin=2026-11-07&checkout=2026-11-08&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":14618808,"name":"Luck Hotel Huai Khwang MRT Ratchada","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":1008.81,"currency":"THB","review_score":7,"reviews":63,"stars":3,"type":"Hotel","lat":13.777271,"lng":100.57292,"url":"https://www.booking.com/hotel/th/my-inn-huai-khwang-mrt-ratchada.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":2233167,"name":"City Residence","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":790,"currency":"THB","review_score":7.5,"reviews":511,"stars":3,"type":"Aparthotel","lat":13.797182,"lng":100.572335,"url":"https://www.booking.com/hotel/th/city-residence.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":12005368,"name":"Homies Ratchada Hotel","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":1000,"currency":"THB","review_score":9.3,"reviews":45,"stars":3,"type":"Hotel","lat":13.789516,"lng":100.577306,"url":"https://www.booking.com/hotel/th/homies-ratchada-bangkok.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":4388424,"name":"R9 Bangkok","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":1000,"currency":"THB","review_score":7.8,"reviews":281,"stars":3,"type":"Guest house","lat":13.756743,"lng":100.562283,"url":"https://www.booking.com/hotel/th/r9-bangkok.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":1162718,"name":"Double DD House at MRT Sutthisarn","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":990,"currency":"THB","review_score":8.2,"reviews":234,"stars":3,"type":"Hostel","lat":13.788374,"lng":100.574913,"url":"https://www.booking.com/hotel/th/double-dd-house.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":335282,"name":"Nice Palace Hotel","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":753.3,"currency":"THB","review_score":7,"reviews":227,"stars":2,"type":"Guest house","lat":13.789827,"lng":100.551904,"url":"https://www.booking.com/hotel/th/nice-palace.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":673995,"name":"Suda Palace","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":1000,"currency":"THB","review_score":7.4,"reviews":105,"stars":3,"type":"Hotel","lat":13.789171,"lng":100.550938,"url":"https://www.booking.com/hotel/th/suda-palace.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13343278,"name":"Golden Mango home hotel","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":1001.95,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Guest house","lat":13.766826,"lng":100.570126,"url":"https://www.booking.com/hotel/th/jin-mang-guo-zhi-jia.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":824839,"name":"Watana Hotel","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":981,"currency":"THB","review_score":7.7,"reviews":170,"stars":2,"type":"Hotel","lat":13.786643,"lng":100.572613,"url":"https://www.booking.com/hotel/th/watana.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":11822728,"name":"FRIENDS@SaiLom","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":679.25,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Homestay","lat":13.78065,"lng":100.549497,"url":"https://www.booking.com/hotel/th/friends-sailom.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":4255728,"name":"Casaluxe Hotel Ratchada","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":887.42,"currency":"THB","review_score":8.5,"reviews":197,"stars":3,"type":"Hotel","lat":13.820235,"lng":100.583442,"url":"https://www.booking.com/hotel/th/casa-luxe-and-resident.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13151077,"name":"811-STP Homely room Free Wi-Fi and Near BTS Line","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":561.6,"currency":"THB","review_score":7.5,"reviews":16,"stars":3,"type":"Apartment","lat":13.838875,"lng":100.571915,"url":"https://www.booking.com/hotel/th/811-stp-homely-room-free-wi-fi-and-near-bts-line.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13556282,"name":"202-STP Homely room Free Wi-Fi and Near BTS","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":666.9,"currency":"THB","review_score":9.1,"reviews":10,"stars":3,"type":"Apartment","lat":13.838911,"lng":100.572282,"url":"https://www.booking.com/hotel/th/202-stp-homely-room-free-wi-fi-and-near-bts.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":505293,"name":"Cinnamon Hotel Bangkok","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":1062,"currency":"THB","review_score":8,"reviews":340,"stars":5,"type":"Hotel","lat":13.840784,"lng":100.562284,"url":"https://www.booking.com/hotel/th/cinnamon-residence.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":1503752,"name":"Livotel Hotel Kaset Nawamin Bangkok","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":1034,"currency":"THB","review_score":7.5,"reviews":508,"stars":4,"type":"Hotel","lat":13.839643,"lng":100.582514,"url":"https://www.booking.com/hotel/th/livotelhotel-kaset-nawamin.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13314600,"name":"104 Peaceful and Cosy apartment near BTS","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":393.6,"currency":"THB","review_score":7.2,"reviews":14,"stars":3,"type":"Apartment","lat":13.838971,"lng":100.572132,"url":"https://www.booking.com/hotel/th/104-peaceful-and-cosy-apartment-near-bts-with-free-wifi.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":3065776,"name":"TD Bangkok-Walk To Union Mall & Central Latprao","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":1050.3,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Hotel","lat":13.812871,"lng":100.563574,"url":"https://www.booking.com/hotel/th/td-bangkok-man-gu-shan-yue-xiao-ju.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":10004237,"name":"Smile Residence at Kaset-Sena","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":990,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Aparthotel","lat":13.832484,"lng":100.573528,"url":"https://www.booking.com/hotel/th/smile-residence-krungethphmhaankhr.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":498188,"name":"Kaset Guesthouse","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":720,"currency":"THB","review_score":7,"reviews":36,"stars":1,"type":"Guest house","lat":13.837494,"lng":100.573814,"url":"https://www.booking.com/hotel/th/kaset-guesthouse.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":14251915,"name":"Studio Botanica I 2 mins to SRT","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":983.25,"currency":"THB","review_score":9.6,"reviews":41,"stars":3,"type":"Apartment","lat":13.841219,"lng":100.560261,"url":"https://www.booking.com/hotel/th/studio-botanica-i-2-mins-to-srt.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":717230,"name":"Sitara Place Serviced Apartment & Hotel","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":1033.5,"currency":"THB","review_score":9.3,"reviews":244,"stars":3,"type":"Aparthotel","lat":13.764623,"lng":100.564827,"url":"https://www.booking.com/hotel/th/sitara-place-serviced-apartments.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":15052926,"name":"Tiger Homestay","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":902.52,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Homestay","lat":13.746693,"lng":100.558769,"url":"https://www.booking.com/hotel/th/tiger-homestay.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":16899586,"name":"Witz Pop Ratchada","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":1056,"currency":"THB","review_score":10,"reviews":6,"stars":4,"type":"Hotel","lat":13.772373,"lng":100.571536,"url":"https://www.booking.com/hotel/th/witz-pop-ratchada.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":13259020,"name":"Kiwi Capsule Hotel","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":600,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Capsule hotel","lat":13.744624,"lng":100.556447,"url":"https://www.booking.com/hotel/th/kiwi-capsule.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":796797,"name":"3Howw Hostel @ Sukhumvit 21","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":900,"currency":"THB","review_score":7.6,"reviews":237,"stars":2,"type":"Hostel","lat":13.740388,"lng":100.562327,"url":"https://www.booking.com/hotel/th/3howwhostel-sukhumvit21.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":16894045,"name":"SHIN Hostel Ratchada ROTFAI","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":856.08,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Hostel","lat":13.769125,"lng":100.569346,"url":"https://www.booking.com/hotel/th/shin-hostel-ratchada-rotfai.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"},{"id":12026585,"name":"First Villa Life Hostel","source":"Booking.com","checkin":"2026-11-14","checkout":"2026-11-15","price":632,"currency":"THB","review_score":null,"reviews":0,"stars":null,"type":"Hostel","lat":13.761865,"lng":100.565625,"url":"https://www.booking.com/hotel/th/efirs-willaa-ailf-a-a-a-tma1a-a.html?checkin=2026-11-14&checkout=2026-11-15&group_adults=2&no_rooms=1&selected_currency=THB"}]},"sampleLabel":"ข้อมูลตัวอย่าง Booking.com (ค้นเมื่อ 5 พ.ย. 2026, ผู้ใหญ่ 2 คน 1 ห้อง, 3 วันเข้าพัก)","artifact":false};</script>
 <script>
 'use strict';
 // ---------------------------------------------------------------- ค่าเริ่มต้น (ตรงกับ ../config.example.json)
@@ -219,8 +271,14 @@ const ZONE_COLORS = ['var(--z0)', 'var(--z1)', 'var(--z2)', '#0b7285', '#c2255c'
 let DEFAULTS = {
   zones: ZONES.map(z => z.key), q: '', maxPrice: 1000, minPrice: 0, minRating: 7, minReviews: 0,
   allowUnrated: true, buffer: 1.2, excludeTypes: ['capsule hotel'], onlyNew: false, sort: 'price',
+  dateFrom: '', dateTo: '', dates: [], weekdays: [], groupHotel: false, excludeSources: [],
 };
 let DROP_PCT = 5;
+let TRIPCOM_URL = 'https://th.trip.com/hotels/list?city=359&checkin={checkin}&checkout={checkout}&adult={adults}&crn=1&searchWord={q}';
+const tripLink = (q, ci, co, adults = 2) => TRIPCOM_URL
+  .replace('{checkin}', (ci || '').replaceAll('-', '/')).replace('{checkout}', (co || '').replaceAll('-', '/'))
+  .replace('{adults}', adults).replace('{q}', encodeURIComponent(q));
+const TRIP_AREAS = { rama9: 'Rama 9 Bangkok', huaikhwang: 'Huai Khwang Bangkok', ratchayothin: 'Ratchayothin Bangkok' };
 const K_FILTERS = 'hotelalert.filters', K_SEEN = 'hotelalert.seen', K_SRC = 'hotelalert.source';
 
 const EMBED = window.HOTEL_EMBED || null; // ใส่มาโดย build_web.py สำหรับไฟล์เดียวเปิดได้เลย
@@ -228,7 +286,10 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const baht = v => '฿' + Math.round(v).toLocaleString('th-TH');
 const TH_M = 'ม.ค. ก.พ. มี.ค. เม.ย. พ.ค. มิ.ย. ก.ค. ส.ค. ก.ย. ต.ค. พ.ย. ธ.ค.'.split(' ');
-const thDate = iso => { const d = new Date(iso + 'T00:00:00'); return isNaN(d) ? '-' : `${d.getDate()} ${TH_M[d.getMonth()]}`; };
+const TH_D = 'อา. จ. อ. พ. พฤ. ศ. ส.'.split(' ');
+const thDate = iso => { const d = new Date(iso + 'T00:00:00'); return isNaN(d) ? '-' : `${TH_D[d.getDay()]} ${d.getDate()} ${TH_M[d.getMonth()]}`; };
+const wdOf = iso => new Date(iso + 'T00:00:00').getDay();
+const addDays = (iso, n) => { const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return d.toLocaleDateString('sv'); };
 const load = (k, def) => { try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } };
 const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } };
 
@@ -262,9 +323,9 @@ function cleanUrl(url) {
   } catch { return [url, {}]; }
 }
 function parseSnapshot(data) {
-  let metaIn = '', metaOut = '', items = data;
+  let metaIn = '', metaOut = '', metaSrc = '', items = data;
   if (!Array.isArray(data)) {
-    metaIn = data.checkin || ''; metaOut = data.checkout || '';
+    metaIn = data.checkin || ''; metaOut = data.checkout || ''; metaSrc = data.provider || '';
     items = data.accommodations || data.hotels || [];
   }
   const out = [];
@@ -287,6 +348,7 @@ function parseSnapshot(data) {
       reviews: (r ? r.number_of_reviews : it.reviews) || 0,
       stars: r ? r.stars : it.stars, kind: it.accommodationType || it.type || 'อื่นๆ',
       checkin, checkout,
+      source: it.source || metaSrc || (/booking\.com/.test(url) ? 'Booking.com' : /trip\.com/.test(url) ? 'Trip.com' : 'อื่นๆ'),
     });
   }
   return out;
@@ -311,7 +373,7 @@ function setData(list, info) {
   hotels = [...map.values()];
   const dates = [...new Set(hotels.map(h => h.checkin).filter(Boolean))].sort();
   $('srcInfo').textContent = `${info} · ${hotels.length} แห่ง` + (dates.length ? ` · เข้าพัก ${dates.map(thDate).join(', ')}` : '');
-  buildTypeBoxes();
+  buildTypeBoxes(); buildDateBoxes(); buildSrcBoxes();
   render();
   return hotels.filter(h => !before.has(keyOf(h)));
 }
@@ -340,7 +402,15 @@ function statusOf(h) {
   if (h.perNight <= prev * (1 - DROP_PCT / 100)) return { kind: 'drop', prev };
   return { kind: 'seen', prev };
 }
-function applyFilters() {
+function passDates(h) {
+  if (!h.checkin) return true;
+  if (F.dateFrom && h.checkin < F.dateFrom) return false;
+  if (F.dateTo && h.checkin > F.dateTo) return false;
+  if (F.dates.length && !F.dates.includes(h.checkin)) return false;
+  if (F.weekdays.length && !F.weekdays.includes(wdOf(h.checkin))) return false;
+  return true;
+}
+function baseRows(withDates = true) {
   const q = F.q.trim().toLowerCase();
   const res = [];
   for (const h of hotels) {
@@ -350,10 +420,28 @@ function applyFilters() {
     if (h.rating == null) { if (!F.allowUnrated) continue; }
     else if (h.rating < F.minRating || h.reviews < F.minReviews) continue;
     if (F.excludeTypes.includes(h.kind.toLowerCase())) continue;
+    if (F.excludeSources.includes(h.source)) continue;
     if (q && !h.name.toLowerCase().includes(q)) continue;
+    if (withDates && !passDates(h)) continue;
     const st = statusOf(h);
     if (F.onlyNew && st.kind === 'seen') continue;
     res.push({ h, ...m, st });
+  }
+  return res;
+}
+function applyFilters() {
+  let res = baseRows();
+  if (F.groupHotel) {
+    const best = new Map();
+    for (const r of res) {
+      const k = r.h.source + '|' + r.h.id, b = best.get(k);
+      if (!b) best.set(k, { ...r, dates: [r.h.checkin] });
+      else {
+        b.dates.push(r.h.checkin);
+        if (r.h.perNight < b.h.perNight) Object.assign(b, { h: r.h, st: r.st, dist: r.dist });
+      }
+    }
+    res = [...best.values()];
   }
   const val = r => (r.h.rating ?? 0) / r.h.perNight;
   const sorters = {
@@ -362,6 +450,7 @@ function applyFilters() {
     rating: (a, b) => (b.h.rating ?? -1) - (a.h.rating ?? -1) || b.h.reviews - a.h.reviews,
     distance: (a, b) => a.dist - b.dist,
     zone: (a, b) => a.idx - b.idx || a.h.perNight - b.h.perNight,
+    date: (a, b) => a.h.checkin.localeCompare(b.h.checkin) || a.h.perNight - b.h.perNight,
   };
   return res.sort(sorters[F.sort] || sorters.price);
 }
@@ -381,7 +470,58 @@ function buildTypeBoxes() {
     `<label class="chip"><input type="checkbox" value="${esc(k)}" ${F.excludeTypes.includes(k.toLowerCase()) ? '' : 'checked'}>${esc(k)} <span class="muted">${counts[k]}</span></label>`).join('')
     : '<span class="muted">โหลดข้อมูลก่อน</span>';
 }
+function buildDateBoxes() {
+  const stats = {};
+  for (const h of hotels) if (h.checkin) {
+    const st = stats[h.checkin] ||= { n: 0, min: Infinity };
+    st.n++; st.min = Math.min(st.min, h.perNight);
+  }
+  const ds = Object.keys(stats).sort();
+  F.dates = F.dates.filter(d => stats[d]);
+  $('dateBoxes').innerHTML = ds.length ? ds.map(d =>
+    `<label class="chip"><input type="checkbox" value="${d}" ${F.dates.includes(d) ? 'checked' : ''}>${thDate(d)} <small>${stats[d].n} แห่ง</small></label>`).join('')
+    + '<span class="muted" style="width:100%">ไม่ติ๊ก = ทุกวันที่มีข้อมูล</span>'
+    : '<span class="muted">ข้อมูลไม่มีวันที่</span>';
+  $('wdBoxes').innerHTML = [1, 2, 3, 4, 5, 6, 0].map(w =>
+    `<label class="chip"><input type="checkbox" value="${w}" ${F.weekdays.includes(w) ? 'checked' : ''}>${TH_D[w]}</label>`).join('');
+  if (ds.length && !$('tIn').value) { $('tIn').value = ds[0]; $('tOut').value = addDays(ds[0], 1); }
+}
+function buildSrcBoxes() {
+  const counts = {};
+  for (const h of hotels) counts[h.source] = (counts[h.source] || 0) + 1;
+  $('srcBoxes').innerHTML = Object.keys(counts).length ? Object.entries(counts).map(([k, n]) =>
+    `<label class="chip"><input type="checkbox" value="${esc(k)}" ${F.excludeSources.includes(k) ? '' : 'checked'}>${esc(k)} <small>${n}</small></label>`).join('')
+    : '<span class="muted">โหลดข้อมูลก่อน</span>';
+}
+function renderTripLinks() {
+  const ci = $('tIn').value, co = $('tOut').value, ad = Math.max(1, +$('tAdults').value || 2);
+  if (!ci || !co || co <= ci) { $('tripLinks').innerHTML = '<span class="muted">เลือกวันเช็คเอาท์ให้หลังวันเช็คอิน</span>'; return; }
+  const max = +$('tMax').value;
+  const extra = max ? `&price=0-${max}` : '';
+  $('tripLinks').innerHTML = ZONES.map((z, i) =>
+    `<a class="btn trip" target="_blank" rel="noopener" href="${esc(tripLink(TRIP_AREAS[z.key] || z.name, ci, co, ad) + extra)}">
+      <span style="color:${ZONE_COLORS[i % ZONE_COLORS.length]}">●</span> ${esc(z.name)} บน Trip.com</a>`).join('') +
+    `<span class="muted" style="align-self:center">${thDate(ci)} – ${thDate(co)} · ${nightsBetween(ci, co)} คืน · ${ad} ผู้ใหญ่</span>`;
+}
+function renderDateChart() {
+  const rows = baseRows(false), by = {};
+  for (const r of rows) if (r.h.checkin) {
+    const b = by[r.h.checkin] ||= { n: 0, min: Infinity, name: '' };
+    b.n++; if (r.h.perNight < b.min) { b.min = r.h.perNight; b.name = r.h.name; }
+  }
+  const ds = Object.keys(by).sort();
+  if (!ds.length) { $('dateChart').innerHTML = '<p class="muted">ไม่มีข้อมูลวันที่ตามตัวกรอง</p>'; return; }
+  const hi = Math.max(...ds.map(d => by[d].min)), lo = Math.min(...ds.map(d => by[d].min));
+  $('dateChart').innerHTML = ds.map(d => {
+    const b = by[d];
+    return `<button type="button" class="drow ${b.min === lo ? 'best' : ''} ${F.dates.length === 1 && F.dates[0] === d ? 'on' : ''}" data-date="${d}" title="ถูกสุด: ${esc(b.name)}">
+      <span>${thDate(d)}</span><span class="bar"><i style="width:${(b.min / hi * 100).toFixed(0)}%"></i></span>
+      <span class="v">${baht(b.min)} · ${b.n} แห่ง</span></button>`;
+  }).join('');
+}
 function syncControls() {
+  $('dFrom').value = F.dateFrom; $('dTo').value = F.dateTo;
+  $('groupHotel').checked = F.groupHotel;
   $('q').value = F.q;
   $('maxPrice').value = F.maxPrice; $('maxPriceOut').textContent = baht(F.maxPrice);
   $('minPrice').value = F.minPrice; $('minPriceOut').textContent = baht(F.minPrice);
@@ -425,16 +565,21 @@ function render() {
     if (cheapestByZone[r.zone.key] === r) tags.push('<span class="tag cheap">ถูกสุดในย่าน</span>');
     const rating = h.rating != null ? `<span class="score">⭐ ${h.rating}</span> (${h.reviews.toLocaleString('th-TH')} รีวิว)` : 'ยังไม่มีรีวิว';
     const name = h.url ? `<a href="${esc(h.url)}" target="_blank" rel="noopener">${esc(h.name)}</a>` : esc(h.name);
+    const links = [h.url ? `<a href="${esc(h.url)}" target="_blank" rel="noopener">${esc(h.source)}</a>` : '',
+      h.source !== 'Trip.com' && h.checkin ? `<a class="trip" href="${esc(tripLink(h.name, h.checkin, h.checkout))}" target="_blank" rel="noopener">เทียบบน Trip.com</a>` : ''].join('');
+    const more = r.dates && r.dates.length > 1 ? `<span>มี ${r.dates.length} วัน: ${r.dates.sort().map(thDate).join(', ')}</span>` : '';
     const was = r.st.kind === 'drop' ? `<small><s>${baht(r.st.prev)}</s></small>` : '';
     return `<article class="item" id="h-${esc(h.id)}" style="--zc:${color}">
       <h3>${name}${tags.join('')}</h3>
       <div class="price">${was}<b>${baht(h.perNight)}</b><small>ต่อคืน${h.nights > 1 ? ` · รวม ${baht(h.total)} (${h.nights} คืน)` : ''}</small></div>
       <div class="meta"><span style="color:${color}">● ${esc(r.zone.name)}</span><span>ห่างถนน ${r.dist.toFixed(1)} กม.</span>
-      <span>${esc(h.kind)}${h.stars ? ` · ${h.stars} ดาว` : ''}</span><span>${rating}</span><span>เข้าพัก ${thDate(h.checkin)}–${thDate(h.checkout)}</span></div>
+      <span>${esc(h.kind)}${h.stars ? ` · ${h.stars} ดาว` : ''}</span><span>${rating}</span><span>เข้าพัก ${thDate(h.checkin)}–${thDate(h.checkout)}</span>${more}<span class="src">${esc(h.source)}</span></div>
+      <div class="links">${links}</div>
     </article>`;
   }).join('') : `<p class="empty">${hotels.length ? 'ไม่มีที่พักตรงตัวกรอง ลองเพิ่มเพดานราคาหรือระยะห่างจากถนน' : 'โหลดข้อมูลเพื่อเริ่มต้น'}</p>`;
 
   drawMap(rows);
+  renderDateChart();
 }
 
 function drawMap(rows) {
@@ -457,10 +602,14 @@ function drawMap(rows) {
     const [lx, ly] = P(z.route[Math.floor(z.route.length / 2)]);
     out += `<text class="lbl" x="${(lx + 8).toFixed(1)}" y="${(ly - 8).toFixed(1)}">${esc(z.name)}</text>`;
   });
-  const active = new Map(rows.map(r => [r.h, r]));
-  for (const h of hotels) {
+  const active = new Map(rows.map(r => [r.h.id, r]));
+  const seenIds = new Set();
+  for (const h0 of hotels) {
+    if (seenIds.has(h0.id)) continue;
+    seenIds.add(h0.id);
+    const h = active.get(h0.id)?.h || h0;
     const [x, y] = P([h.lat, h.lng]);
-    const r = active.get(h);
+    const r = active.get(h.id);
     const cls = r ? (r.st.kind !== 'seen' ? 'dot hot' : 'dot') : 'dot off';
     const fill = r ? ZONE_COLORS[r.idx % ZONE_COLORS.length] : '';
     out += `<circle class="${cls}" data-id="${esc(h.id)}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r ? 6 : 4}" ${fill ? `fill="${fill}"` : ''}>` +
@@ -483,10 +632,10 @@ function markSeen() {
 }
 
 function exportCsv() {
-  const head = ['ชื่อ', 'ย่าน', 'ราคาต่อคืน', 'คะแนน', 'รีวิว', 'ประเภท', 'ห่างถนน(กม.)', 'เช็คอิน', 'เช็คเอาท์', 'สถานะ', 'ลิงก์'];
+  const head = ['ชื่อ', 'ย่าน', 'ราคาต่อคืน', 'คะแนน', 'รีวิว', 'ประเภท', 'ห่างถนน(กม.)', 'เช็คอิน', 'เช็คเอาท์', 'สถานะ', 'แหล่ง', 'ลิงก์', 'Trip.com'];
   const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const lines = lastFiltered.map(r => [r.h.name, r.zone.name, Math.round(r.h.perNight), r.h.rating ?? '', r.h.reviews, r.h.kind,
-    r.dist.toFixed(2), r.h.checkin, r.h.checkout, { new: 'ใหม่', drop: 'ลดราคา', seen: '' }[r.st.kind], r.h.url].map(q).join(','));
+    r.dist.toFixed(2), r.h.checkin, r.h.checkout, { new: 'ใหม่', drop: 'ลดราคา', seen: '' }[r.st.kind], r.h.source, r.h.url, tripLink(r.h.name, r.h.checkin, r.h.checkout)].map(q).join(','));
   const csv = [head.map(q).join(','), ...lines].join('\n');
   if (EMBED?.artifact) {
     navigator.clipboard.writeText(csv).then(() => setMsg(`คัดลอก CSV ${lastFiltered.length} แถวแล้ว วางใน Excel/Google Sheets ได้เลย`),
@@ -556,7 +705,23 @@ function bind() {
   $('typeBoxes').addEventListener('change', () => {
     F.excludeTypes = [...$('typeBoxes').querySelectorAll('input:not(:checked)')].map(i => i.value.toLowerCase()); render();
   });
-  $('btnReset').addEventListener('click', () => { F = { ...DEFAULTS }; buildZoneBoxes(); buildTypeBoxes(); render(); });
+  $('btnReset').addEventListener('click', () => { F = { ...DEFAULTS }; buildZoneBoxes(); buildTypeBoxes(); buildDateBoxes(); buildSrcBoxes(); render(); });
+  $('dFrom').addEventListener('change', e => { F.dateFrom = e.target.value; render(); });
+  $('dTo').addEventListener('change', e => { F.dateTo = e.target.value; render(); });
+  $('groupHotel').addEventListener('change', e => { F.groupHotel = e.target.checked; render(); });
+  $('dateBoxes').addEventListener('change', () => { F.dates = [...$('dateBoxes').querySelectorAll('input:checked')].map(i => i.value); render(); });
+  $('wdBoxes').addEventListener('change', () => { F.weekdays = [...$('wdBoxes').querySelectorAll('input:checked')].map(i => +i.value); render(); });
+  $('srcBoxes').addEventListener('change', () => { F.excludeSources = [...$('srcBoxes').querySelectorAll('input:not(:checked)')].map(i => i.value); render(); });
+  $('dateChart').addEventListener('click', e => {
+    const d = e.target.closest('.drow')?.dataset.date;
+    if (!d) return;
+    F.dates = F.dates.length === 1 && F.dates[0] === d ? [] : [d];
+    buildDateBoxes(); render();
+  });
+  $('tripForm').addEventListener('input', e => {
+    if (e.target.id === 'tIn' && $('tIn').value && (!$('tOut').value || $('tOut').value <= $('tIn').value)) $('tOut').value = addDays($('tIn').value, 1);
+    renderTripLinks();
+  });
 
   $('btnSample').addEventListener('click', loadSample);
   $('file').addEventListener('change', async e => {
@@ -612,14 +777,18 @@ function bind() {
         minRating: f.min_rating ?? DEFAULTS.minRating, minReviews: f.min_reviews ?? 0,
         allowUnrated: f.allow_unrated ?? true, buffer: f.buffer_km ?? cfg.zones[0]?.buffer_km ?? DEFAULTS.buffer,
       };
+      if (cfg.links?.tripcom) TRIPCOM_URL = cfg.links.tripcom;
       F = { ...DEFAULTS, ...load(K_FILTERS, {}) };
       F.zones = F.zones.filter(k => ZONES.some(z => z.key === k));
       break;
     } catch { /* ไม่มีไฟล์ หรือเปิดผ่าน file:// → ใช้ค่าเริ่มต้น */ }
   }
+  const today = new Date().toLocaleDateString('sv');
+  $('tIn').value = addDays(today, 1); $('tOut').value = addDays(today, 2);
   buildZoneBoxes();
   bind();
   render();
+  renderTripLinks();
   const src = load(K_SRC, null);
   if (src?.url) { $('url').value = src.url; $('refresh').value = src.refresh || '0'; }
   if (EMBED?.artifact) { $('urlForm').hidden = true; $('btnNotify').hidden = true; $('btnCsv').textContent = '⧉ คัดลอก CSV'; }

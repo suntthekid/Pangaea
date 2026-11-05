@@ -69,15 +69,36 @@ class DealTest(unittest.TestCase):
         self.assertEqual(d[0].previous, 900)
 
 
+class DateAndSourceTest(unittest.TestCase):
+    def test_checkin_range_weekday_and_source(self):
+        items = [hotel(1, 800, 13.78, 100.574, checkin="2099-01-01"),   # พฤหัส
+                 hotel(2, 800, 13.78, 100.574, checkin="2099-01-03"),   # เสาร์
+                 dict(hotel(3, 800, 13.78, 100.574, checkin="2099-01-03"), source="Trip.com")]
+        hs = ha.parse_snapshot(items)
+        f = dict(CFG["filters"], checkin_from="2099-01-02")
+        self.assertEqual(sorted(d.hotel.id for d in ha.find_deals(hs, ZONES, f, {})), ["2", "3"])
+        f = dict(CFG["filters"], checkin_weekdays=[3])
+        self.assertEqual([d.hotel.id for d in ha.find_deals(hs, ZONES, f, {})], ["1"])
+        f = dict(CFG["filters"], sources=["Trip.com"])
+        self.assertEqual([d.hotel.id for d in ha.find_deals(hs, ZONES, f, {})], ["3"])
+
+    def test_tripcom_link_has_dates_and_name(self):
+        h = ha.parse_snapshot([hotel(1, 800, 13.78, 100.574)])[0]
+        link = ha.tripcom_link(h)
+        self.assertIn("trip.com", link)
+        self.assertIn("checkin=2099/01/01", link)
+        self.assertIn("H1", link)
+
+
 class EndToEndTest(unittest.TestCase):
     def test_sample_snapshot_runs_and_remembers(self):
         with tempfile.TemporaryDirectory() as tmp:
             state = Path(tmp) / "state.json"
             # ใช้วันที่ในอนาคตเพื่อไม่ให้ถูกล้างออกจาก state
             data = json.loads((HERE / "sample_snapshot.json").read_text())
-            data["checkin"], data["checkout"] = "2099-01-01", "2099-01-02"
             for h in data["hotels"]:
                 h["url"] = ""
+                h["checkin"], h["checkout"] = h["checkin"].replace("2026", "2099"), h["checkout"].replace("2026", "2099")
             snap = Path(tmp) / "snap.json"
             snap.write_text(json.dumps(data))
             args = [str(snap), "-c", str(HERE / "config.example.json"), "--state", str(state),
@@ -85,7 +106,7 @@ class EndToEndTest(unittest.TestCase):
             self.assertEqual(ha.main(args), 0)
             first = json.loads(state.read_text())
             self.assertGreater(len(first), 10)
-            self.assertNotIn("13259020|2099-01-01", first)  # Kiwi Capsule (สุขุมวิท) ต้องไม่ถูกแจ้ง
+            self.assertNotIn("13259020|2099-11-06", first)  # Kiwi Capsule (สุขุมวิท) ต้องไม่ถูกแจ้ง
             self.assertIn("ห้วยขวาง", (Path(tmp) / "r.html").read_text())
             hotels = ha.load_sources([str(snap)])
             self.assertEqual(ha.find_deals(hotels, ZONES, CFG["filters"], first), [])

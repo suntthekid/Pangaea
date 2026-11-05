@@ -9,8 +9,14 @@ const ZONE_COLORS = ['var(--z0)', 'var(--z1)', 'var(--z2)', '#0b7285', '#c2255c'
 let DEFAULTS = {
   zones: ZONES.map(z => z.key), q: '', maxPrice: 1000, minPrice: 0, minRating: 7, minReviews: 0,
   allowUnrated: true, buffer: 1.2, excludeTypes: ['capsule hotel'], onlyNew: false, sort: 'price',
+  dateFrom: '', dateTo: '', dates: [], weekdays: [], groupHotel: false, excludeSources: [],
 };
 let DROP_PCT = 5;
+let TRIPCOM_URL = 'https://th.trip.com/hotels/list?city=359&checkin={checkin}&checkout={checkout}&adult={adults}&crn=1&searchWord={q}';
+const tripLink = (q, ci, co, adults = 2) => TRIPCOM_URL
+  .replace('{checkin}', (ci || '').replaceAll('-', '/')).replace('{checkout}', (co || '').replaceAll('-', '/'))
+  .replace('{adults}', adults).replace('{q}', encodeURIComponent(q));
+const TRIP_AREAS = { rama9: 'Rama 9 Bangkok', huaikhwang: 'Huai Khwang Bangkok', ratchayothin: 'Ratchayothin Bangkok' };
 const K_FILTERS = 'hotelalert.filters', K_SEEN = 'hotelalert.seen', K_SRC = 'hotelalert.source';
 
 const EMBED = window.HOTEL_EMBED || null; // ใส่มาโดย build_web.py สำหรับไฟล์เดียวเปิดได้เลย
@@ -18,7 +24,10 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const baht = v => '฿' + Math.round(v).toLocaleString('th-TH');
 const TH_M = 'ม.ค. ก.พ. มี.ค. เม.ย. พ.ค. มิ.ย. ก.ค. ส.ค. ก.ย. ต.ค. พ.ย. ธ.ค.'.split(' ');
-const thDate = iso => { const d = new Date(iso + 'T00:00:00'); return isNaN(d) ? '-' : `${d.getDate()} ${TH_M[d.getMonth()]}`; };
+const TH_D = 'อา. จ. อ. พ. พฤ. ศ. ส.'.split(' ');
+const thDate = iso => { const d = new Date(iso + 'T00:00:00'); return isNaN(d) ? '-' : `${TH_D[d.getDay()]} ${d.getDate()} ${TH_M[d.getMonth()]}`; };
+const wdOf = iso => new Date(iso + 'T00:00:00').getDay();
+const addDays = (iso, n) => { const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return d.toLocaleDateString('sv'); };
 const load = (k, def) => { try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } };
 const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } };
 
@@ -52,9 +61,9 @@ function cleanUrl(url) {
   } catch { return [url, {}]; }
 }
 function parseSnapshot(data) {
-  let metaIn = '', metaOut = '', items = data;
+  let metaIn = '', metaOut = '', metaSrc = '', items = data;
   if (!Array.isArray(data)) {
-    metaIn = data.checkin || ''; metaOut = data.checkout || '';
+    metaIn = data.checkin || ''; metaOut = data.checkout || ''; metaSrc = data.provider || '';
     items = data.accommodations || data.hotels || [];
   }
   const out = [];
@@ -77,6 +86,7 @@ function parseSnapshot(data) {
       reviews: (r ? r.number_of_reviews : it.reviews) || 0,
       stars: r ? r.stars : it.stars, kind: it.accommodationType || it.type || 'อื่นๆ',
       checkin, checkout,
+      source: it.source || metaSrc || (/booking\.com/.test(url) ? 'Booking.com' : /trip\.com/.test(url) ? 'Trip.com' : 'อื่นๆ'),
     });
   }
   return out;
@@ -101,7 +111,7 @@ function setData(list, info) {
   hotels = [...map.values()];
   const dates = [...new Set(hotels.map(h => h.checkin).filter(Boolean))].sort();
   $('srcInfo').textContent = `${info} · ${hotels.length} แห่ง` + (dates.length ? ` · เข้าพัก ${dates.map(thDate).join(', ')}` : '');
-  buildTypeBoxes();
+  buildTypeBoxes(); buildDateBoxes(); buildSrcBoxes();
   render();
   return hotels.filter(h => !before.has(keyOf(h)));
 }
@@ -130,7 +140,15 @@ function statusOf(h) {
   if (h.perNight <= prev * (1 - DROP_PCT / 100)) return { kind: 'drop', prev };
   return { kind: 'seen', prev };
 }
-function applyFilters() {
+function passDates(h) {
+  if (!h.checkin) return true;
+  if (F.dateFrom && h.checkin < F.dateFrom) return false;
+  if (F.dateTo && h.checkin > F.dateTo) return false;
+  if (F.dates.length && !F.dates.includes(h.checkin)) return false;
+  if (F.weekdays.length && !F.weekdays.includes(wdOf(h.checkin))) return false;
+  return true;
+}
+function baseRows(withDates = true) {
   const q = F.q.trim().toLowerCase();
   const res = [];
   for (const h of hotels) {
@@ -140,10 +158,28 @@ function applyFilters() {
     if (h.rating == null) { if (!F.allowUnrated) continue; }
     else if (h.rating < F.minRating || h.reviews < F.minReviews) continue;
     if (F.excludeTypes.includes(h.kind.toLowerCase())) continue;
+    if (F.excludeSources.includes(h.source)) continue;
     if (q && !h.name.toLowerCase().includes(q)) continue;
+    if (withDates && !passDates(h)) continue;
     const st = statusOf(h);
     if (F.onlyNew && st.kind === 'seen') continue;
     res.push({ h, ...m, st });
+  }
+  return res;
+}
+function applyFilters() {
+  let res = baseRows();
+  if (F.groupHotel) {
+    const best = new Map();
+    for (const r of res) {
+      const k = r.h.source + '|' + r.h.id, b = best.get(k);
+      if (!b) best.set(k, { ...r, dates: [r.h.checkin] });
+      else {
+        b.dates.push(r.h.checkin);
+        if (r.h.perNight < b.h.perNight) Object.assign(b, { h: r.h, st: r.st, dist: r.dist });
+      }
+    }
+    res = [...best.values()];
   }
   const val = r => (r.h.rating ?? 0) / r.h.perNight;
   const sorters = {
@@ -152,6 +188,7 @@ function applyFilters() {
     rating: (a, b) => (b.h.rating ?? -1) - (a.h.rating ?? -1) || b.h.reviews - a.h.reviews,
     distance: (a, b) => a.dist - b.dist,
     zone: (a, b) => a.idx - b.idx || a.h.perNight - b.h.perNight,
+    date: (a, b) => a.h.checkin.localeCompare(b.h.checkin) || a.h.perNight - b.h.perNight,
   };
   return res.sort(sorters[F.sort] || sorters.price);
 }
@@ -171,7 +208,58 @@ function buildTypeBoxes() {
     `<label class="chip"><input type="checkbox" value="${esc(k)}" ${F.excludeTypes.includes(k.toLowerCase()) ? '' : 'checked'}>${esc(k)} <span class="muted">${counts[k]}</span></label>`).join('')
     : '<span class="muted">โหลดข้อมูลก่อน</span>';
 }
+function buildDateBoxes() {
+  const stats = {};
+  for (const h of hotels) if (h.checkin) {
+    const st = stats[h.checkin] ||= { n: 0, min: Infinity };
+    st.n++; st.min = Math.min(st.min, h.perNight);
+  }
+  const ds = Object.keys(stats).sort();
+  F.dates = F.dates.filter(d => stats[d]);
+  $('dateBoxes').innerHTML = ds.length ? ds.map(d =>
+    `<label class="chip"><input type="checkbox" value="${d}" ${F.dates.includes(d) ? 'checked' : ''}>${thDate(d)} <small>${stats[d].n} แห่ง</small></label>`).join('')
+    + '<span class="muted" style="width:100%">ไม่ติ๊ก = ทุกวันที่มีข้อมูล</span>'
+    : '<span class="muted">ข้อมูลไม่มีวันที่</span>';
+  $('wdBoxes').innerHTML = [1, 2, 3, 4, 5, 6, 0].map(w =>
+    `<label class="chip"><input type="checkbox" value="${w}" ${F.weekdays.includes(w) ? 'checked' : ''}>${TH_D[w]}</label>`).join('');
+  if (ds.length && !$('tIn').value) { $('tIn').value = ds[0]; $('tOut').value = addDays(ds[0], 1); }
+}
+function buildSrcBoxes() {
+  const counts = {};
+  for (const h of hotels) counts[h.source] = (counts[h.source] || 0) + 1;
+  $('srcBoxes').innerHTML = Object.keys(counts).length ? Object.entries(counts).map(([k, n]) =>
+    `<label class="chip"><input type="checkbox" value="${esc(k)}" ${F.excludeSources.includes(k) ? '' : 'checked'}>${esc(k)} <small>${n}</small></label>`).join('')
+    : '<span class="muted">โหลดข้อมูลก่อน</span>';
+}
+function renderTripLinks() {
+  const ci = $('tIn').value, co = $('tOut').value, ad = Math.max(1, +$('tAdults').value || 2);
+  if (!ci || !co || co <= ci) { $('tripLinks').innerHTML = '<span class="muted">เลือกวันเช็คเอาท์ให้หลังวันเช็คอิน</span>'; return; }
+  const max = +$('tMax').value;
+  const extra = max ? `&price=0-${max}` : '';
+  $('tripLinks').innerHTML = ZONES.map((z, i) =>
+    `<a class="btn trip" target="_blank" rel="noopener" href="${esc(tripLink(TRIP_AREAS[z.key] || z.name, ci, co, ad) + extra)}">
+      <span style="color:${ZONE_COLORS[i % ZONE_COLORS.length]}">●</span> ${esc(z.name)} บน Trip.com</a>`).join('') +
+    `<span class="muted" style="align-self:center">${thDate(ci)} – ${thDate(co)} · ${nightsBetween(ci, co)} คืน · ${ad} ผู้ใหญ่</span>`;
+}
+function renderDateChart() {
+  const rows = baseRows(false), by = {};
+  for (const r of rows) if (r.h.checkin) {
+    const b = by[r.h.checkin] ||= { n: 0, min: Infinity, name: '' };
+    b.n++; if (r.h.perNight < b.min) { b.min = r.h.perNight; b.name = r.h.name; }
+  }
+  const ds = Object.keys(by).sort();
+  if (!ds.length) { $('dateChart').innerHTML = '<p class="muted">ไม่มีข้อมูลวันที่ตามตัวกรอง</p>'; return; }
+  const hi = Math.max(...ds.map(d => by[d].min)), lo = Math.min(...ds.map(d => by[d].min));
+  $('dateChart').innerHTML = ds.map(d => {
+    const b = by[d];
+    return `<button type="button" class="drow ${b.min === lo ? 'best' : ''} ${F.dates.length === 1 && F.dates[0] === d ? 'on' : ''}" data-date="${d}" title="ถูกสุด: ${esc(b.name)}">
+      <span>${thDate(d)}</span><span class="bar"><i style="width:${(b.min / hi * 100).toFixed(0)}%"></i></span>
+      <span class="v">${baht(b.min)} · ${b.n} แห่ง</span></button>`;
+  }).join('');
+}
 function syncControls() {
+  $('dFrom').value = F.dateFrom; $('dTo').value = F.dateTo;
+  $('groupHotel').checked = F.groupHotel;
   $('q').value = F.q;
   $('maxPrice').value = F.maxPrice; $('maxPriceOut').textContent = baht(F.maxPrice);
   $('minPrice').value = F.minPrice; $('minPriceOut').textContent = baht(F.minPrice);
@@ -215,16 +303,21 @@ function render() {
     if (cheapestByZone[r.zone.key] === r) tags.push('<span class="tag cheap">ถูกสุดในย่าน</span>');
     const rating = h.rating != null ? `<span class="score">⭐ ${h.rating}</span> (${h.reviews.toLocaleString('th-TH')} รีวิว)` : 'ยังไม่มีรีวิว';
     const name = h.url ? `<a href="${esc(h.url)}" target="_blank" rel="noopener">${esc(h.name)}</a>` : esc(h.name);
+    const links = [h.url ? `<a href="${esc(h.url)}" target="_blank" rel="noopener">${esc(h.source)}</a>` : '',
+      h.source !== 'Trip.com' && h.checkin ? `<a class="trip" href="${esc(tripLink(h.name, h.checkin, h.checkout))}" target="_blank" rel="noopener">เทียบบน Trip.com</a>` : ''].join('');
+    const more = r.dates && r.dates.length > 1 ? `<span>มี ${r.dates.length} วัน: ${r.dates.sort().map(thDate).join(', ')}</span>` : '';
     const was = r.st.kind === 'drop' ? `<small><s>${baht(r.st.prev)}</s></small>` : '';
     return `<article class="item" id="h-${esc(h.id)}" style="--zc:${color}">
       <h3>${name}${tags.join('')}</h3>
       <div class="price">${was}<b>${baht(h.perNight)}</b><small>ต่อคืน${h.nights > 1 ? ` · รวม ${baht(h.total)} (${h.nights} คืน)` : ''}</small></div>
       <div class="meta"><span style="color:${color}">● ${esc(r.zone.name)}</span><span>ห่างถนน ${r.dist.toFixed(1)} กม.</span>
-      <span>${esc(h.kind)}${h.stars ? ` · ${h.stars} ดาว` : ''}</span><span>${rating}</span><span>เข้าพัก ${thDate(h.checkin)}–${thDate(h.checkout)}</span></div>
+      <span>${esc(h.kind)}${h.stars ? ` · ${h.stars} ดาว` : ''}</span><span>${rating}</span><span>เข้าพัก ${thDate(h.checkin)}–${thDate(h.checkout)}</span>${more}<span class="src">${esc(h.source)}</span></div>
+      <div class="links">${links}</div>
     </article>`;
   }).join('') : `<p class="empty">${hotels.length ? 'ไม่มีที่พักตรงตัวกรอง ลองเพิ่มเพดานราคาหรือระยะห่างจากถนน' : 'โหลดข้อมูลเพื่อเริ่มต้น'}</p>`;
 
   drawMap(rows);
+  renderDateChart();
 }
 
 function drawMap(rows) {
@@ -247,10 +340,14 @@ function drawMap(rows) {
     const [lx, ly] = P(z.route[Math.floor(z.route.length / 2)]);
     out += `<text class="lbl" x="${(lx + 8).toFixed(1)}" y="${(ly - 8).toFixed(1)}">${esc(z.name)}</text>`;
   });
-  const active = new Map(rows.map(r => [r.h, r]));
-  for (const h of hotels) {
+  const active = new Map(rows.map(r => [r.h.id, r]));
+  const seenIds = new Set();
+  for (const h0 of hotels) {
+    if (seenIds.has(h0.id)) continue;
+    seenIds.add(h0.id);
+    const h = active.get(h0.id)?.h || h0;
     const [x, y] = P([h.lat, h.lng]);
-    const r = active.get(h);
+    const r = active.get(h.id);
     const cls = r ? (r.st.kind !== 'seen' ? 'dot hot' : 'dot') : 'dot off';
     const fill = r ? ZONE_COLORS[r.idx % ZONE_COLORS.length] : '';
     out += `<circle class="${cls}" data-id="${esc(h.id)}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r ? 6 : 4}" ${fill ? `fill="${fill}"` : ''}>` +
@@ -273,10 +370,10 @@ function markSeen() {
 }
 
 function exportCsv() {
-  const head = ['ชื่อ', 'ย่าน', 'ราคาต่อคืน', 'คะแนน', 'รีวิว', 'ประเภท', 'ห่างถนน(กม.)', 'เช็คอิน', 'เช็คเอาท์', 'สถานะ', 'ลิงก์'];
+  const head = ['ชื่อ', 'ย่าน', 'ราคาต่อคืน', 'คะแนน', 'รีวิว', 'ประเภท', 'ห่างถนน(กม.)', 'เช็คอิน', 'เช็คเอาท์', 'สถานะ', 'แหล่ง', 'ลิงก์', 'Trip.com'];
   const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const lines = lastFiltered.map(r => [r.h.name, r.zone.name, Math.round(r.h.perNight), r.h.rating ?? '', r.h.reviews, r.h.kind,
-    r.dist.toFixed(2), r.h.checkin, r.h.checkout, { new: 'ใหม่', drop: 'ลดราคา', seen: '' }[r.st.kind], r.h.url].map(q).join(','));
+    r.dist.toFixed(2), r.h.checkin, r.h.checkout, { new: 'ใหม่', drop: 'ลดราคา', seen: '' }[r.st.kind], r.h.source, r.h.url, tripLink(r.h.name, r.h.checkin, r.h.checkout)].map(q).join(','));
   const csv = [head.map(q).join(','), ...lines].join('\n');
   if (EMBED?.artifact) {
     navigator.clipboard.writeText(csv).then(() => setMsg(`คัดลอก CSV ${lastFiltered.length} แถวแล้ว วางใน Excel/Google Sheets ได้เลย`),
@@ -346,7 +443,23 @@ function bind() {
   $('typeBoxes').addEventListener('change', () => {
     F.excludeTypes = [...$('typeBoxes').querySelectorAll('input:not(:checked)')].map(i => i.value.toLowerCase()); render();
   });
-  $('btnReset').addEventListener('click', () => { F = { ...DEFAULTS }; buildZoneBoxes(); buildTypeBoxes(); render(); });
+  $('btnReset').addEventListener('click', () => { F = { ...DEFAULTS }; buildZoneBoxes(); buildTypeBoxes(); buildDateBoxes(); buildSrcBoxes(); render(); });
+  $('dFrom').addEventListener('change', e => { F.dateFrom = e.target.value; render(); });
+  $('dTo').addEventListener('change', e => { F.dateTo = e.target.value; render(); });
+  $('groupHotel').addEventListener('change', e => { F.groupHotel = e.target.checked; render(); });
+  $('dateBoxes').addEventListener('change', () => { F.dates = [...$('dateBoxes').querySelectorAll('input:checked')].map(i => i.value); render(); });
+  $('wdBoxes').addEventListener('change', () => { F.weekdays = [...$('wdBoxes').querySelectorAll('input:checked')].map(i => +i.value); render(); });
+  $('srcBoxes').addEventListener('change', () => { F.excludeSources = [...$('srcBoxes').querySelectorAll('input:not(:checked)')].map(i => i.value); render(); });
+  $('dateChart').addEventListener('click', e => {
+    const d = e.target.closest('.drow')?.dataset.date;
+    if (!d) return;
+    F.dates = F.dates.length === 1 && F.dates[0] === d ? [] : [d];
+    buildDateBoxes(); render();
+  });
+  $('tripForm').addEventListener('input', e => {
+    if (e.target.id === 'tIn' && $('tIn').value && (!$('tOut').value || $('tOut').value <= $('tIn').value)) $('tOut').value = addDays($('tIn').value, 1);
+    renderTripLinks();
+  });
 
   $('btnSample').addEventListener('click', loadSample);
   $('file').addEventListener('change', async e => {
@@ -402,14 +515,18 @@ function bind() {
         minRating: f.min_rating ?? DEFAULTS.minRating, minReviews: f.min_reviews ?? 0,
         allowUnrated: f.allow_unrated ?? true, buffer: f.buffer_km ?? cfg.zones[0]?.buffer_km ?? DEFAULTS.buffer,
       };
+      if (cfg.links?.tripcom) TRIPCOM_URL = cfg.links.tripcom;
       F = { ...DEFAULTS, ...load(K_FILTERS, {}) };
       F.zones = F.zones.filter(k => ZONES.some(z => z.key === k));
       break;
     } catch { /* ไม่มีไฟล์ หรือเปิดผ่าน file:// → ใช้ค่าเริ่มต้น */ }
   }
+  const today = new Date().toLocaleDateString('sv');
+  $('tIn').value = addDays(today, 1); $('tOut').value = addDays(today, 2);
   buildZoneBoxes();
   bind();
   render();
+  renderTripLinks();
   const src = load(K_SRC, null);
   if (src?.url) { $('url').value = src.url; $('refresh').value = src.refresh || '0'; }
   if (EMBED?.artifact) { $('urlForm').hidden = true; $('btnNotify').hidden = true; $('btnCsv').textContent = '⧉ คัดลอก CSV'; }

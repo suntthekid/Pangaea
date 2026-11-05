@@ -4,21 +4,80 @@
     {
       "key": "rama9",
       "name": "พระราม 9",
-      "route": [[13.7577, 100.5657], [13.7562, 100.5790], [13.7535, 100.5980], [13.7495, 100.6230]],
+      "route": [
+        [
+          13.7577,
+          100.5657
+        ],
+        [
+          13.7562,
+          100.579
+        ],
+        [
+          13.7535,
+          100.598
+        ],
+        [
+          13.7495,
+          100.623
+        ]
+      ],
       "buffer_km": 1.2,
       "max_price_per_night": 1000
     },
     {
       "key": "huaikhwang",
       "name": "ห้วยขวาง–รัชดา",
-      "route": [[13.7577, 100.5657], [13.7660, 100.5700], [13.7787, 100.5737], [13.7895, 100.5740], [13.7985, 100.5738], [13.8060, 100.5728]],
+      "route": [
+        [
+          13.7577,
+          100.5657
+        ],
+        [
+          13.766,
+          100.57
+        ],
+        [
+          13.7787,
+          100.5737
+        ],
+        [
+          13.7895,
+          100.574
+        ],
+        [
+          13.7985,
+          100.5738
+        ],
+        [
+          13.806,
+          100.5728
+        ]
+      ],
       "buffer_km": 1.2,
       "max_price_per_night": 1000
     },
     {
       "key": "ratchayothin",
       "name": "รัชโยธิน",
-      "route": [[13.8060, 100.5728], [13.8200, 100.5790], [13.8295, 100.5695], [13.8370, 100.5730]],
+      "route": [
+        [
+          13.806,
+          100.5728
+        ],
+        [
+          13.82,
+          100.579
+        ],
+        [
+          13.8295,
+          100.5695
+        ],
+        [
+          13.837,
+          100.573
+        ]
+      ],
       "buffer_km": 1.2,
       "max_price_per_night": 1000
     }
@@ -30,9 +89,22 @@
     "allow_unrated": true,
     "min_reviews": 0,
     "price_drop_pct": 5,
-    "exclude_types": ["Capsule", "แคปซูล"]
+    "exclude_types": [
+      "Capsule",
+      "แคปซูล"
+    ],
+    "checkin_from": "",
+    "checkin_to": "",
+    "checkin_weekdays": [],
+    "sources": []
   },
   "notify": {
-    "channels": ["console"]
+    "channels": [
+      "console"
+    ]
+  },
+  "_comment_filters": "checkin_from/checkin_to = ช่วงวันเช็คอิน (YYYY-MM-DD) · checkin_weekdays = วันในสัปดาห์ 0=จ. … 4=ศ. 5=ส. 6=อา. · sources = เช่น [\"Booking.com\", \"Trip.com\"] ว่าง = ทุกแหล่ง",
+  "links": {
+    "tripcom": "https://th.trip.com/hotels/list?city=359&checkin={checkin}&checkout={checkout}&adult={adults}&crn=1&searchWord={q}"
   }
 }
