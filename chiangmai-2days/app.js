@@ -67,6 +67,10 @@ const HOTELS = [
   },
 ];
 
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+};
 const fmt = n => n.toLocaleString("th-TH");
 let chosen = null;
 
@@ -106,7 +110,7 @@ function renderHotels(filter = "all") {
 
 function choose(h) {
   chosen = h;
-  localStorage.setItem("cm-hotel", h.id);
+  store.set("cm-hotel", h.id);
   document.getElementById("chosen-hotel").textContent = `${h.name} (${h.zone})`;
   document.getElementById("b-hotel").value = h.live ? h.live.price : Math.round((h.price[0] + h.price[1]) / 2 / 500) * 500;
   renderHotels(document.querySelector(".chip.active").dataset.filter);
@@ -186,12 +190,12 @@ const PACK = [
   "รองเท้าเดินสบาย", "ครีมกันแดด + ยากันยุง", "พาวเวอร์แบงก์", "ของขวัญเล็กๆ ให้แฟน 🎁",
 ];
 function renderChecklist() {
-  const saved = JSON.parse(localStorage.getItem("cm-pack") || "[]");
+  const saved = JSON.parse(store.get("cm-pack") || "[]");
   const ul = document.getElementById("checklist");
   ul.innerHTML = PACK.map((p, i) => `<li><label><input type="checkbox" data-i="${i}" ${saved.includes(i) ? "checked" : ""}><span>${p}</span></label></li>`).join("");
   ul.addEventListener("change", () => {
     const on = [...ul.querySelectorAll("input:checked")].map(c => +c.dataset.i);
-    localStorage.setItem("cm-pack", JSON.stringify(on));
+    store.set("cm-pack", JSON.stringify(on));
   });
 }
 
@@ -207,5 +211,5 @@ B.forEach(id => document.getElementById(id).addEventListener("input", calcBudget
 renderHotels();
 renderDay(1);
 renderChecklist();
-const savedHotel = HOTELS.find(h => h.id === localStorage.getItem("cm-hotel"));
+const savedHotel = HOTELS.find(h => h.id === store.get("cm-hotel"));
 if (savedHotel) choose(savedHotel); else calcBudget();
